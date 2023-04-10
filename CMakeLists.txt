@@ -1,0 +1,35 @@
+cmake_minimum_required(VERSION 3.8)
+
+project(krtcsdk)
+
+if (CMAKE_CL_64) 
+    if (CMAKE_BUILD_TYPE MATCHES "Debug")
+        set(BUILD_TYPE "x64-Debug")
+    else()
+        set(BUILD_TYPE "x64-Release")
+    endif()
+else()
+    if (CMAKE_BUILD_TYPE MATCHES "Debug")
+        set(BUILD_TYPE "x86-Debug")
+    else()
+        set(BUILD_TYPE "x86-Release")
+    endif()
+endif()
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/bin)
+
+set(KRTC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(KRTC_THIRD_PARTY_DIR ${KRTC_DIR}/../krtc-third_party/out/install/${BUILD_TYPE}/${CMAKE_SYSTEM_NAME})
+
+set(WEBRTC_DIR ${KRTC_DIR}/../../webrtc/webrtc-checkout/src)
+
+set(WEBRTC_LIB_DIR ${WEBRTC_DIR}/out/x64_debug_m96/obj)
+
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+	add_definitions(-DUNICODE -D_UNICODE -DWEBRTC_WIN -DWIN32_LEAN_AND_MEAN)
+endif()
+
+add_subdirectory("./krtc")
+add_subdirectory("./examples")

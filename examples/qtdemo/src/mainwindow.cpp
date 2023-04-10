@@ -1,0 +1,437 @@
+﻿#include <map>
+
+#include <QVariant>
+
+#include "mainwindow.h"
+#include "./ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+   
+    initWindow();
+}
+
+MainWindow::~MainWindow()
+{
+	stopPush();
+	stopPreview();
+	stopDevice();
+    delete ui;
+}
+
+void MainWindow::initWindow()
+{
+	setWindowTitle(QStringLiteral("srs native webrtc推拉流-qtdemo"));
+    setMinimumSize(1200, 600);
+	
+	ui->leftWidget->setFixedWidth(250);
+
+	ui->previewWidget->setMinimumSize(400,400);
+	ui->pullWidget->setMinimumSize(400, 400);
+
+    ui->serverLineEdit->setText("1.14.148.67:1985");
+    ui->uidLineEdit->setText("111");
+    ui->pushStreamNamelineEdit->setText("livestream");
+	ui->networkQosLabel->setText("");
+	ui->statusLabel->setText("");
+
+	ui->pullStreamNameLineEdit->setText("livestream");
+
+	
+	ui->pullUidLineEdit->setText("222");
+	ui->cameraRadioButton->setChecked(true);
+
+    connect(ui->startDeviceBtn, &QPushButton::clicked,
+        this, &MainWindow::onStartDeviceBtnClicked);
+    connect(ui->startPreviewBtn, &QPushButton::clicked,
+        this, &MainWindow::onStartPreviewBtnClicked);
+    connect(ui->startPushBtn, &QPushButton::clicked,
+        this, &MainWindow::onStartPushBtnClicked);
+    connect(ui->startPullBtn, &QPushButton::clicked,
+        this, &MainWindow::onStartPullBtnClicked);
+	connect(this, &MainWindow::showToastSignal,
+		this, &MainWindow::onShowToast, Qt::QueuedConnection);
+
+	connect(this, &MainWindow::networkInfoSignal,
+		[this](const QString& text) {
+			ui->networkQosLabel->setText(text);
+	});
+	connect(this, &MainWindow::startDeviceFailedSignal,
+		this, [this] {
+			stopDevice();
+			ui->startDeviceBtn->setText(QStringLiteral("启动音视频设备"));
+		});
+	connect(this, &MainWindow::previewFailedSignal,
+		[this] {
+			stopPreview();
+			ui->startPreviewBtn->setText(QStringLiteral("本地预览"));
+		});
+	connect(this, &MainWindow::pushFailedSignal,
+		[this] {
+			stopPush();
+			ui->startPushBtn->setText(QStringLiteral("开始推流"));
+		});
+	connect(this, &MainWindow::pullFailedSignal,
+		[this] {
+			stopPull();
+			ui->startPullBtn->setText(QStringLiteral("开始拉流"));
+		});
+
+	krtc::KRTCEngine::Init(krtc::CONTROL_TYPE::BOTH, this);
+
+	initVideoComboBox();
+	initAudioComboBox();
+
+	qRegisterMetaType<std::shared_ptr<krtc::MediaFrame>>("std::shared_ptr<krtc::MediaFrame>");
+
+}
+
+void MainWindow::initVideoComboBox()
+{
+	int total = krtc::KRTCEngine::GetCameraCount();
+	if (total <= 0) {
+		return;
+	}
+
+	for (int i = 0; i < total; ++i) {
+		char device_name[128] = { 0 };
+		char device_id[128] = { 0 };
+		krtc::KRTCEngine::GetCameraInfo(i, device_name, sizeof(device_name),
+			device_id, sizeof(device_id));
+
+		QVariant useVar;
+		DeviceInfo info = { device_name, device_id };
+		useVar.setValue(info);
+		ui->videoDeviceCbx->addItem(QString::fromStdString(device_name), useVar);
+	}
+}
+
+void MainWindow::initAudioComboBox()
+{
+	int total = krtc::KRTCEngine::GetMicCount();
+	if (total <= 0) {
+		return;
+	}
+
+	for (int i = 0; i < total; ++i) {
+		char device_name[128] = { 0 };
+		char device_id[128] = { 0 };
+		krtc::KRTCEngine::GetMicInfo(i, device_name, sizeof(device_name),
+			device_id, sizeof(device_id));
+
+		QVariant useVar;
+		DeviceInfo info = { device_name, device_id };
+		useVar.setValue(info);
+		ui->audioDeviceCbx->addItem(QString::fromStdString(device_name), useVar);
+	}
+}
+
+void MainWindow::onStartDeviceBtnClicked()
+{
+	ui->startDeviceBtn->setEnabled(false);
+	if (!audio_init_ || !video_init_) {
+		if (startDevice()) {
+			ui->startDeviceBtn->setText(QStringLiteral("停止音视频设备"));
+		}
+	}
+	else {
+		if (stopDevice()) {
+			ui->startDeviceBtn->setText(QStringLiteral("启动音视频设备"));
+		}
+	}
+	ui->startDeviceBtn->setEnabled(true);
+}
+
+void MainWindow::onStartPreviewBtnClicked()
+{
+	ui->startPreviewBtn->setEnabled(false);
+
+	if (!krtc_preview_) {
+		if (startPreview()) {
+			ui->startPreviewBtn->setText(QStringLiteral("停止预览"));
+		}
+	}
+	else {
+		if (stopPreview()) {
+			ui->startPreviewBtn->setText(QStringLiteral("本地预览"));
+		}
+	}
+
+	ui->startPreviewBtn->setEnabled(true);
+}
+
+void MainWindow::onStartPushBtnClicked()
+{
+	ui->startPushBtn->setEnabled(false);
+	if (!krtc_pusher_) {
+		if (startPush()) {
+			ui->startPushBtn->setText(QStringLiteral("停止推流"));
+		}
+	}
+	else {
+		if (stopPush()) {
+			ui->startPushBtn->setText(QStringLiteral("开始推流"));
+		}
+	}
+
+	ui->startPushBtn->setEnabled(true);
+}
+
+void MainWindow::onStartPullBtnClicked()
+{
+	ui->startPullBtn->setEnabled(false);
+	if (!krtc_puller_) {
+		if (startPull()) {
+			ui->startPullBtn->setText(QStringLiteral("停止拉流"));
+		}
+	}
+	else {
+		if (stopPull()) {
+			ui->startPullBtn->setText(QStringLiteral("开始拉流"));
+		}
+	}
+
+	ui->startPullBtn->setEnabled(true);
+}
+
+void MainWindow::onShowToast(const QString& toast, bool err)
+{
+	if (err) {
+		ui->statusLabel->setStyleSheet("color:red;");
+	}
+	else {
+		ui->statusLabel->setStyleSheet("color:blue;");
+	}
+	ui->statusLabel->setText(toast);
+}
+
+bool MainWindow::startDevice() {
+	if (!video_init_) {
+		if (ui->cameraRadioButton->isChecked()) {
+			int index = ui->videoDeviceCbx->currentIndex();
+			QVariant useVar = ui->videoDeviceCbx->itemData(index);
+			std::string device_id = useVar.value<DeviceInfo>().device_id;
+			cam_source_ = krtc::KRTCEngine::CreateCameraSource(device_id.c_str());
+			cam_source_->Start();
+		}
+		else if (ui->desktopRadioButton->isChecked()) {
+			desktop_source_ = krtc::KRTCEngine::CreateScreenSource();
+			desktop_source_->Start();
+		}
+		
+	}
+
+	if (!audio_init_) {
+		int index = ui->audioDeviceCbx->currentIndex();
+		QVariant useVar = ui->audioDeviceCbx->itemData(index);
+
+		std::string device_id = useVar.value<DeviceInfo>().device_id;
+		mic_source_ = krtc::KRTCEngine::CreateMicSource(device_id.c_str());
+		mic_source_->Start();
+	}
+
+	return true;
+}
+
+bool MainWindow::stopDevice() {
+	if (video_init_ && cam_source_) {
+		cam_source_->Stop();
+		cam_source_->Destroy();
+		cam_source_ = nullptr;
+		video_init_ = false;
+	}
+
+	if (video_init_ && desktop_source_) {
+		desktop_source_->Stop();
+		desktop_source_->Destroy();
+		desktop_source_ = nullptr;
+		video_init_ = false;
+	}
+
+	if (audio_init_ && mic_source_) {
+		mic_source_->Stop();
+		mic_source_->Destroy();
+		mic_source_ = nullptr;
+		audio_init_ = false;
+	}
+
+	return true;
+}
+
+bool MainWindow::startPreview() {
+	if (!cam_source_ && !desktop_source_) {
+		showToast(QStringLiteral("预览失败：没有视频源"), true);
+		return false;
+	}
+
+	HWND hwnd = (HWND)ui->previewWidget->winId();
+	if (!hwnd) {
+		showToast(QStringLiteral("预览失败：没有显示窗口"), true);
+		return false;
+	}
+
+	krtc_preview_ = krtc::KRTCEngine::CreatePreview((int)hwnd);
+	krtc_preview_->Start();
+
+	return true;
+}
+
+bool MainWindow::stopPreview() {
+	if (!krtc_preview_) {
+		return false;
+	}
+
+	krtc_preview_->Stop();
+	krtc_preview_ = nullptr;
+
+	showToast(QStringLiteral("停止本地预览成功"), false);
+
+	return true;
+}
+
+bool MainWindow::startPush() {
+	if (!cam_source_ && !desktop_source_) {
+		showToast(QStringLiteral("推流失败：没有视频源"), true);
+		return false;
+	}
+
+	QString url = ui->serverLineEdit->text();
+	if (url.isEmpty()) {
+		showToast(QStringLiteral("推流失败：没有服务器地址"), true);
+		return false;
+	}
+	QString channel = ui->pushStreamNamelineEdit->text();
+	krtc_pusher_ = krtc::KRTCEngine::CreatePusher(url.toUtf8().constData(), channel.toUtf8().constData());
+	krtc_pusher_->Start();
+
+	return true;
+}
+
+bool MainWindow::stopPush() {
+	if (!krtc_pusher_) {
+		return true;
+	}
+
+	krtc_pusher_->Stop();
+	krtc_pusher_->Destroy();
+	krtc_pusher_ = nullptr;
+
+	return true;
+}
+
+bool MainWindow::startPull()
+{
+	HWND hwnd = (HWND)ui->pullWidget->winId();
+	if (!hwnd) {
+		showToast(QStringLiteral("拉流失败：没有显示窗口"), true);
+		return false;
+	}
+
+	QString url = ui->serverLineEdit->text();
+	if (url.isEmpty()) {
+		showToast(QStringLiteral("拉流失败：没有服务器地址"), true);
+		return false;
+	}
+	QString channel = ui->pushStreamNamelineEdit->text();
+	krtc_puller_ = krtc::KRTCEngine::CreatePuller(url.toUtf8().constData(), channel.toUtf8().constData(), (int)hwnd);
+	krtc_puller_->Start();
+
+	return true;
+}
+
+bool MainWindow::stopPull()
+{
+	if (!krtc_puller_) {
+		return true;
+	}
+
+	krtc_puller_->Stop();
+	krtc_puller_->Destroy();
+	krtc_puller_ = nullptr;
+
+	return true;
+}
+
+void MainWindow::showToast(const QString& toast, bool err)
+{
+	emit showToastSignal(toast, err);
+}
+
+void MainWindow::OnAudioSourceSuccess() {
+	audio_init_ = true;
+	showToast(QStringLiteral("麦克风启动成功"), false);
+}
+
+void MainWindow::OnAudioSourceFailed(krtc::KRTCError err)
+{
+	QString err_msg = QStringLiteral("麦克风启动失败: ") + QString::fromStdString(krtc::KRTCEngine::GetErrString(err));
+	showToast(err_msg, true);
+
+	emit startDeviceFailedSignal();
+}
+
+void MainWindow::OnVideoSourceSuccess() {
+	// api_thread
+	video_init_ = true;
+	showToast(QStringLiteral("摄像头启动成功"), false);
+}
+
+void MainWindow::OnVideoSourceFailed(krtc::KRTCError err)
+{
+	QString err_msg = QStringLiteral("摄像头启动失败: ") + QString::fromStdString(krtc::KRTCEngine::GetErrString(err));
+	showToast(err_msg, true);
+	emit startDeviceFailedSignal();
+}
+
+void MainWindow::OnPreviewSuccess() {
+	showToast(QStringLiteral("本地预览成功"), false);
+}
+
+void MainWindow::OnPreviewFailed(krtc::KRTCError err) {
+	QString err_msg = QStringLiteral("本地预览失败: ") + QString::fromStdString(krtc::KRTCEngine::GetErrString(err));
+	showToast(err_msg, true);
+
+	if (krtc_preview_) {
+		krtc_preview_->Stop();
+		krtc_preview_ = nullptr;
+	}
+
+	emit previewFailedSignal();
+
+}
+
+void MainWindow::OnPushSuccess() {
+	showToast(QStringLiteral("推流成功"), false);
+}
+
+void MainWindow::OnPushFailed(krtc::KRTCError err) {
+	QString err_msg = QStringLiteral("推流失败: ") + QString::fromStdString(krtc::KRTCEngine::GetErrString(err));
+	showToast(err_msg, true);
+
+	emit pushFailedSignal();
+}
+
+void MainWindow::OnPullSuccess() {
+	showToast(QStringLiteral("拉流成功"), false);
+}
+
+void MainWindow::OnPullFailed(krtc::KRTCError err) {
+	QString err_msg = QStringLiteral("拉流失败: ") + QString::fromStdString(krtc::KRTCEngine::GetErrString(err));
+	showToast(err_msg, true);
+
+	emit pullFailedSignal();
+}
+
+
+void MainWindow::OnNetworkInfo(uint64_t rtt_ms, uint64_t packets_lost, double fraction_lost)
+{
+	char str[256] = { 0 };
+	snprintf(str, sizeof(str), "rtt=%lldms 累计丢包数=%lld 丢包指数=%d",
+		rtt_ms, packets_lost, fraction_lost);
+	QString networkInfo = QString::fromLocal8Bit(str);
+	emit networkInfoSignal(networkInfo);
+}
+
