@@ -1,14 +1,19 @@
 #include <stdio.h>
-#include <Windows.h>
 #include <time.h>
-#include <direct.h>
 #include <iostream>
+#include <stdlib.h>
 
 #include "krtc/tools/logstreamfile.h"
 
-#if WIN32
+#if _WIN32
+#include <direct.h>
+#include <Windows.h>
 #include <ImageHlp.h>
-#pragma comment(lib, "imagehlp.lib") 
+#pragma comment(lib, "imagehlp.lib")
+#elif __linux__
+#include <unistd.h>
+#include <assert.h>
+#define MAX_PATH 256
 #endif
 
 namespace utils {
@@ -32,7 +37,23 @@ LogStreamFile::LogStreamFile(const std::string& logPreffix) {
   time_t now = time(NULL);
   struct tm* tm_now;
   tm_now = localtime(&now);
-  sprintf_s(ch1, sizeof(ch1),"%d-%d-%d-%d-%d-%d", tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);  //年-月-日 时-分-秒
+#if _WIN32
+  sprintf_s(ch1, sizeof(ch1),"%d-%d-%d-%d-%d-%d", 
+      tm_now->tm_year+1900, 
+      tm_now->tm_mon+1, 
+      tm_now->tm_mday, 
+      tm_now->tm_hour, 
+      tm_now->tm_min, 
+      tm_now->tm_sec);
+#elif __linux__ 
+  snprintf(ch1, sizeof(ch1),"%d-%d-%d-%d-%d-%d", 
+      tm_now->tm_year+1900, 
+      tm_now->tm_mon+1, 
+      tm_now->tm_mday, 
+      tm_now->tm_hour, 
+      tm_now->tm_min, 
+      tm_now->tm_sec);
+#endif
   std::string suffix = ch1;
   if (!logPreffix.empty()) {
     suffix = logPreffix + "-" + suffix  + ".log";

@@ -1,5 +1,5 @@
-#ifndef LOG_STREAM_H_
-#define LOG_STREAM_H_
+#ifndef KRTCSDK_KRTC_TOOLS_LOGSTREAMFILE_H_
+#define KRTCSDK_KRTC_TOOLS_LOGSTREAMFILE_H_
 
 #include <string>
 #include <memory>
@@ -19,6 +19,6 @@ class LogStreamFile {
   std::unique_ptr<rtc::FileRotatingLogSink> fileLogSink_ = NULL;
 };
 
-}
+} 
 
-#endif
+#endif // KRTCSDK_KRTC_TOOLS_LOGSTREAMFILE_H_

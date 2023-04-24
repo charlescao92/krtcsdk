@@ -9,6 +9,8 @@
 #include <api/video/video_sink_interface.h>
 #include <api/video/video_frame.h>
 
+#include "krtc/krtc.h"
+
 namespace krtc {
 
  class VideoRenderer : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
@@ -16,6 +18,7 @@ namespace krtc {
     // Creates a platform-specific renderer if possible, or a null implementation
     // if failing.
     static std::unique_ptr<VideoRenderer> Create(
+        CONTROL_TYPE type,
         int hwnd,
         size_t width,
         size_t height);

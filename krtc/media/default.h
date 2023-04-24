@@ -1,5 +1,5 @@
-#ifndef KRTCSDK_KRTC_BASE_DEFAULT_H_
-#define KRTCSDK_KRTC_BASE_DEFAULT_H_
+#ifndef KRTCSDK_KRTC_MEDIA_BASE_DEFAULT_H_
+#define KRTCSDK_KRTC_MEDIA_BASE_DEFAULT_H_
 
 #include <rtc_base/ref_counted_object.h>
 #include <api/jsep.h>
@@ -21,4 +21,4 @@ public:
     }
 };
 
-#endif // KRTCSDK_KRTC_BASE_DEFAULT_H_
+#endif // KRTCSDK_KRTC_MEDIA_BASE_DEFAULT_H_

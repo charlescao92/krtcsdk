@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1274</width>
-    <height>701</height>
+    <width>874</width>
+    <height>661</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,13 +17,13 @@
    <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
      <widget class="QWidget" name="widget" native="true">
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QWidget" name="leftWidget" native="true">
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <widget class="QWidget" name="widget_4" native="true">
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <layout class="QHBoxLayout" name="horizontalLayout_7">
              <item>
               <widget class="QRadioButton" name="cameraRadioButton">
                <property name="text">
@@ -39,7 +39,7 @@
               </widget>
              </item>
              <item>
-              <spacer name="horizontalSpacer_3">
+              <spacer name="horizontalSpacer_8">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -55,7 +55,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="pushGroup">
+           <widget class="QGroupBox" name="pushGroup_2">
             <layout class="QVBoxLayout" name="verticalLayout">
              <item>
               <layout class="QFormLayout" name="formLayout">
@@ -136,13 +136,13 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="pullGroupBox">
+           <widget class="QGroupBox" name="pullGroupBox_2">
             <property name="styleSheet">
              <string notr="true"/>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
-              <layout class="QFormLayout" name="formLayout_2">
+              <layout class="QFormLayout" name="formLayout_4">
                <item row="0" column="0">
                 <widget class="QLabel" name="label_8">
                  <property name="text">
@@ -173,7 +173,7 @@
               </widget>
              </item>
              <item>
-              <spacer name="verticalSpacer">
+              <spacer name="verticalSpacer_2">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
@@ -192,28 +192,22 @@
         </widget>
        </item>
        <item>
-        <widget class="QWidget" name="previewWidget" native="true">
+        <widget class="YUVOpenGLWidget" name="previewOpenGLWidget">
          <property name="minimumSize">
           <size>
            <width>300</width>
            <height>300</height>
           </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(0, 0, 0);</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QWidget" name="pullWidget" native="true">
+        <widget class="YUVOpenGLWidget" name="pullOpenGLWidget">
          <property name="minimumSize">
           <size>
            <width>300</width>
            <height>300</height>
           </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(0, 0, 0);</string>
          </property>
         </widget>
        </item>
@@ -253,7 +247,7 @@
        <item>
         <widget class="QLabel" name="statusLabel">
          <property name="text">
-          <string>状态</string>
+          <string>TextLabel</string>
          </property>
         </widget>
        </item>
@@ -280,13 +274,20 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1274</width>
-     <height>22</height>
+     <width>874</width>
+     <height>28</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>YUVOpenGLWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>src/YUVOpenGLWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

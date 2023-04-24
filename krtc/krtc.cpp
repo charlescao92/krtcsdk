@@ -13,142 +13,132 @@
 #include "krtc/device/mic_impl.h"
 
 namespace krtc {
-    typedef std::map<const KRTCError, std::string> KRTCErrStrs;
-    KRTCErrStrs KRTCErrStr = {
-        {KRTCError::kNoErr, "NoErr"},
-        {KRTCError::kVideoCreateCaptureErr,         "VideoCreateCaptureErr"},
-        {KRTCError::kVideoNoCapabilitiesErr,        "VideoNoCapabilitiesErr"},
-        {KRTCError::kVideoNoBestCapabilitiesErr,    "VideoNoBestCapabilitiesErr"},
-        {KRTCError::kVideoStartCaptureErr,          "VideoStartCaptureErr"},
-        {KRTCError::kPreviewNoVideoSourceErr,       "PreviewNoVideoSourceErr"},
-        {KRTCError::kInvalidUrlErr,                 "InvalidUrlErr"},
-        {KRTCError::kAddTrackErr,                   "AddTrackErr"},
-        {KRTCError::kCreateOfferErr,                "CreateOfferErr"},
-        {KRTCError::kSendOfferErr,                  "SendOfferErr"},
-        {KRTCError::kParseAnswerErr,                "ParseAnswerErr"},
-        {KRTCError::kAnswerResponseErr,             "kAnswerResponseErr"},
-        {KRTCError::kNoAudioDeviceErr,              "NoAudioDeviceErr"},
-        {KRTCError::kAudioNotFoundErr,              "AudioNotFoundErr"},
-        {KRTCError::kAudioSetRecordingDeviceErr,    "AudioSetRecordingDeviceErr"},
-        {KRTCError::kAudioInitRecordingErr,	        "AudioInitRecordingErr"},
-        {KRTCError::kAudioStartRecordingErr,        "AudioStartRecordingErr"},
-    };
 
-    void KRTCEngine::Init(CONTROL_TYPE type, KRTCEngineObserver* observer) {
-        rtc::LogMessage::LogTimestamps(true);
-        rtc::LogMessage::LogThreads(true);
-        rtc::LogMessage::LogToDebug(rtc::LS_VERBOSE);
+typedef std::map<const KRTCError, std::string> KRTCErrStrs;
 
-        KRTCGlobal::Instance()->RegisterEngineObserver(observer);
+KRTCErrStrs KRTCErrStr = {
+    {KRTCError::kNoErr, "NoErr"},
+    {KRTCError::kVideoCreateCaptureErr,         "VideoCreateCaptureErr"},
+    {KRTCError::kVideoNoCapabilitiesErr,        "VideoNoCapabilitiesErr"},
+    {KRTCError::kVideoNoBestCapabilitiesErr,    "VideoNoBestCapabilitiesErr"},
+    {KRTCError::kVideoStartCaptureErr,          "VideoStartCaptureErr"},
+    {KRTCError::kPreviewNoVideoSourceErr,       "PreviewNoVideoSourceErr"},
+    {KRTCError::kInvalidUrlErr,                 "InvalidUrlErr"},
+    {KRTCError::kAddTrackErr,                   "AddTrackErr"},
+    {KRTCError::kCreateOfferErr,                "CreateOfferErr"},
+    {KRTCError::kSendOfferErr,                  "SendOfferErr"},
+    {KRTCError::kParseAnswerErr,                "ParseAnswerErr"},
+    {KRTCError::kAnswerResponseErr,             "kAnswerResponseErr"},
+    {KRTCError::kNoAudioDeviceErr,              "NoAudioDeviceErr"},
+    {KRTCError::kAudioNotFoundErr,              "AudioNotFoundErr"},
+    {KRTCError::kAudioSetRecordingDeviceErr,    "AudioSetRecordingDeviceErr"},
+    {KRTCError::kAudioInitRecordingErr,	        "AudioInitRecordingErr"},
+    {KRTCError::kAudioStartRecordingErr,        "AudioStartRecordingErr"},
+};
 
-        RTC_LOG(LS_INFO) << "KRTCSDK init";
-        switch (type)
-        {
-        case krtc::CONTROL_TYPE::PUSH:
-            KRTCGlobal::Instance()->InitPush();
-            break;
-        case krtc::CONTROL_TYPE::PULL:
-            break;
-        case krtc::CONTROL_TYPE::BOTH:
-            KRTCGlobal::Instance()->InitPush();
-            break;
-        default:
-            break;
-        }    
-    }
+void KRTCEngine::Init(KRTCEngineObserver* observer) {
+    rtc::LogMessage::LogTimestamps(true);
+    rtc::LogMessage::LogThreads(true);
+    rtc::LogMessage::LogToDebug(rtc::LS_VERBOSE);
 
-    const char* KRTCEngine::GetErrString(const KRTCError& err) {
-        return KRTCErrStr[err].c_str();
-    }
+    KRTCGlobal::Instance()->RegisterEngineObserver(observer);
+}
 
-    uint32_t KRTCEngine::GetCameraCount() {
-        return KRTCGlobal::Instance()->api_thread()->Invoke<uint32_t>(RTC_FROM_HERE, [=]() {
-            return KRTCGlobal::Instance()->video_device_info()->NumberOfDevices();
-        });
-        return 0;
-    }
+const char* KRTCEngine::GetErrString(const KRTCError& err) {
+    return KRTCErrStr[err].c_str();
+}
 
-    int32_t KRTCEngine::GetCameraInfo(int index, char* device_name, uint32_t device_name_length,
-        char* device_id, uint32_t device_id_length)
-    {
-        assert(device_name_length == 128 && device_id_length == 128);
-        return KRTCGlobal::Instance()->api_thread()->Invoke<int32_t>(RTC_FROM_HERE, [&]() {
-            int32_t res = KRTCGlobal::Instance()->video_device_info()->GetDeviceName(index,
-                device_name, device_name_length, device_id, device_id_length);
-            return res;
-            });
-        return 0;
-    }
+uint32_t KRTCEngine::GetCameraCount() {
+    return KRTCGlobal::Instance()->api_thread()->Invoke<uint32_t>(RTC_FROM_HERE, [=]() {
+        if (!KRTCGlobal::Instance()->video_device_info()) {
+            return (uint32_t)0;
+        }
+        return KRTCGlobal::Instance()->video_device_info()->NumberOfDevices();
+    });
+}
 
-    IVideoHandler* KRTCEngine::CreateCameraSource(const char* cam_id) {
-        return KRTCGlobal::Instance()->api_thread()->Invoke<IVideoHandler*>(RTC_FROM_HERE, [=]() {
-            return new CameraVideoSource(cam_id);
-        });
-        return nullptr;
-    }
-
-    uint32_t KRTCEngine::GetScreenCount()
-    {
-        return KRTCGlobal::Instance()->api_thread()->Invoke<int32_t>(RTC_FROM_HERE, [=]() {
-            int32_t res = KRTCGlobal::Instance()->GetScreenCount();
-            return res;
-            });
-        return 0;
-    }
-
-    IVideoHandler* KRTCEngine::CreateScreenSource(const uint32_t& screen_index)
-    {
-        return KRTCGlobal::Instance()->api_thread()->Invoke<IVideoHandler*>(RTC_FROM_HERE, [=]() {
-            return new DesktopVideoSource(screen_index);
-            });
-        return nullptr;
-    }
-
-    int16_t KRTCEngine::GetMicCount() {
-        return KRTCGlobal::Instance()->api_thread()->Invoke<uint32_t>(RTC_FROM_HERE, [=]() {
-            return KRTCGlobal::Instance()->audio_device()->RecordingDevices();
-            });
-        return 0;
-    }
-
-    int32_t KRTCEngine::GetMicInfo(int index, char* mic_name, uint32_t mic_name_length,
-        char* mic_guid, uint32_t mic_guid_length) 
-    {
-        assert(mic_name_length == 128 && mic_guid_length == 128);
-        return KRTCGlobal::Instance()->api_thread()->Invoke<int32_t>(RTC_FROM_HERE, [&]() {
-            int32_t ret = KRTCGlobal::Instance()->audio_device()->RecordingDeviceName(
-                index, mic_name, mic_guid);
+int32_t KRTCEngine::GetCameraInfo(int index, char* device_name, uint32_t device_name_length,
+    char* device_id, uint32_t device_id_length)
+{
+    assert(device_name_length == 128 && device_id_length == 128);
+    return KRTCGlobal::Instance()->api_thread()->Invoke<int32_t>(RTC_FROM_HERE, [&]() {
+        int32_t ret = -1;
+        if (!KRTCGlobal::Instance()->video_device_info()) {
             return ret;
-        });
-        return 0;
-    }
+        }
+        ret = KRTCGlobal::Instance()->video_device_info()->GetDeviceName(index,
+            device_name, device_name_length, device_id, device_id_length);
+        return ret;
+    });
+}
 
-    IAudioHandler* KRTCEngine::CreateMicSource(const char* mic_id) {
-       return KRTCGlobal::Instance()->api_thread()->Invoke<IAudioHandler*>(RTC_FROM_HERE, [=]() {
-            return new MicImpl(mic_id);
-        });
-        return nullptr;
-    }
+IVideoHandler* KRTCEngine::CreateCameraSource(const char* cam_id) {
+    return KRTCGlobal::Instance()->api_thread()->Invoke<IVideoHandler*>(RTC_FROM_HERE, [=]() {
+        return new CameraVideoSource(cam_id);
+    });
+}
 
-    IMediaHandler* KRTCEngine::CreatePreview(int hwnd) {
-       return KRTCGlobal::Instance()->api_thread()->Invoke<IMediaHandler*>(RTC_FROM_HERE, [=]() {
-            return new KRTCPreview(hwnd);
-       });
-        return nullptr;
-    }
+uint32_t KRTCEngine::GetScreenCount()
+{
+    return KRTCGlobal::Instance()->api_thread()->Invoke<int32_t>(RTC_FROM_HERE, [=]() {
+        int32_t res = KRTCGlobal::Instance()->GetScreenCount();
+        return res;
+    });
+}
 
-    IMediaHandler* KRTCEngine::CreatePusher(const char* server_addr, const char* push_channel) {
-       return KRTCGlobal::Instance()->api_thread()->Invoke<IMediaHandler*>(RTC_FROM_HERE, [=]() {
-            return new KRTCPusher(server_addr, push_channel);
-       });
-       return nullptr;
-    }
+IVideoHandler* KRTCEngine::CreateScreenSource(const uint32_t& screen_index)
+{
+    return KRTCGlobal::Instance()->api_thread()->Invoke<IVideoHandler*>(RTC_FROM_HERE, [=]() {
+        return new DesktopVideoSource(screen_index);
+    });
+}
 
-    IMediaHandler* KRTCEngine::CreatePuller(const char* server_addr, const char* pull_channel, int hwnd) {
-        return KRTCGlobal::Instance()->api_thread()->Invoke<IMediaHandler*>(RTC_FROM_HERE, [=]() {
-            return new KRTCPuller(server_addr, pull_channel, hwnd);
-        });
-        return nullptr;
-    }
+int16_t KRTCEngine::GetMicCount() {
+    return KRTCGlobal::Instance()->api_thread()->Invoke<uint32_t>(RTC_FROM_HERE, [=]() {
+        if (!KRTCGlobal::Instance()->audio_device()) {
+            return (int16_t)0;
+        }
+        return KRTCGlobal::Instance()->audio_device()->RecordingDevices();
+    });
+}
 
-} // end namespace KRTC
+int32_t KRTCEngine::GetMicInfo(int index, char* mic_name, uint32_t mic_name_length,
+    char* mic_guid, uint32_t mic_guid_length) 
+{
+    assert(mic_name_length == 128 && mic_guid_length == 128);
+    return KRTCGlobal::Instance()->api_thread()->Invoke<int32_t>(RTC_FROM_HERE, [&]() {
+        int32_t ret = -1;
+        if (!KRTCGlobal::Instance()->audio_device()) {
+            return ret;
+        }
+        ret = KRTCGlobal::Instance()->audio_device()->RecordingDeviceName(
+            index, mic_name, mic_guid);
+        return ret;
+    });
+}
+
+IAudioHandler* KRTCEngine::CreateMicSource(const char* mic_id) {
+   return KRTCGlobal::Instance()->api_thread()->Invoke<IAudioHandler*>(RTC_FROM_HERE, [=]() {
+        return new MicImpl(mic_id);
+    });
+}
+
+IMediaHandler* KRTCEngine::CreatePreview(const unsigned int& hwnd) {
+   return KRTCGlobal::Instance()->api_thread()->Invoke<IMediaHandler*>(RTC_FROM_HERE, [=]() {
+        return new KRTCPreview(hwnd);
+   });
+}
+
+IMediaHandler* KRTCEngine::CreatePusher(const char* server_addr, const char* push_channel) {
+   return KRTCGlobal::Instance()->api_thread()->Invoke<IMediaHandler*>(RTC_FROM_HERE, [=]() {
+        return new KRTCPusher(server_addr, push_channel);
+   });
+}
+
+IMediaHandler* KRTCEngine::CreatePuller(const char* server_addr, const char* pull_channel, const unsigned int& hwnd) {
+    return KRTCGlobal::Instance()->api_thread()->Invoke<IMediaHandler*>(RTC_FROM_HERE, [=]() {
+        return new KRTCPuller(server_addr, pull_channel, hwnd);
+    });
+}
+
+} // namespace krtc

@@ -6,13 +6,12 @@ CTimer::CTimer(unsigned int milliseconds, bool repeat, CTimer::OnTask func) :
 	func_(func) {
 }
 
-CTimer::~CTimer()
-{}
+CTimer::~CTimer() {}
 
-// Æô¶¯º¯Êı
+// å¯åŠ¨å‡½æ•°
 void CTimer::Start()
 {
-	if (milliseconds_ == 0 || milliseconds_ == static_cast<unsigned int>(-1)) // ¼ä¸ôÊ±¼äÎª0»òÄ¬ÈÏÎŞĞ§Öµ£¬Ö±½Ó·µ»Ø
+	if (milliseconds_ == 0 || milliseconds_ == static_cast<unsigned int>(-1)) // é—´éš”æ—¶é—´ä¸º0æˆ–é»˜è®¤æ— æ•ˆå€¼ï¼Œç›´æ¥è¿”å›
 	{
 		return;
 	}
@@ -24,7 +23,7 @@ void CTimer::Start()
 void CTimer::Stop()
 {
 	exit_.store(true);
-	cond_.notify_all(); // »½ĞÑÏß³Ì
+	cond_.notify_all(); // å”¤é†’çº¿ç¨‹
 	if (thread_.joinable())
 	{
 		thread_.join();
@@ -43,14 +42,14 @@ void CTimer::Run()
 		{
 			std::unique_lock<std::mutex> locker(mutex_);
 
-			// Èç¹ûÊÇ±»»½ĞÑµÄ£¬ĞèÒªÅĞ¶ÏÏÈÌõ¼şÈ·¶¨ÊÇ²»ÊÇĞé¼Ù»½ĞÑ
-			// wait_forÊÇµÈ´ıµÚÈı¸ö²ÎÊıÂú×ãÌõ¼ş£¬µ±²»Âú×ãÊ±£¬³¬Ê±ºó¼ÌĞøÍùÏÂÖ´ĞĞ
+			// å¦‚æœæ˜¯è¢«å”¤é†’çš„ï¼Œéœ€è¦åˆ¤æ–­å…ˆæ¡ä»¶ç¡®å®šæ˜¯ä¸æ˜¯è™šå‡å”¤é†’
+			// wait_foræ˜¯ç­‰å¾…ç¬¬ä¸‰ä¸ªå‚æ•°æ»¡è¶³æ¡ä»¶ï¼Œå½“ä¸æ»¡è¶³æ—¶ï¼Œè¶…æ—¶åç»§ç»­å¾€ä¸‹æ‰§è¡Œ
 			cond_.wait_for(locker, std::chrono::milliseconds(milliseconds_), [this]()
 				{ return exit_.load(); }
 			);
 		}
 
-		if (exit_.load()) // ÔÙĞ£ÑéÏÂÍË³ö±êÊ¶
+		if (exit_.load()) // å†æ ¡éªŒä¸‹é€€å‡ºæ ‡è¯†
 		{
 			return;
 		}

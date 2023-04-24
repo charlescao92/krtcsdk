@@ -4,7 +4,7 @@
 
 namespace krtc {
 
-KRTCMediaBase::KRTCMediaBase(const STREAM_CONTROL_TYPE& type, 
+KRTCMediaBase::KRTCMediaBase(const CONTROL_TYPE& type, 
 	const std::string& server_addr, 
 	const std::string& channel, 
 	const int& hwnd) :
@@ -16,11 +16,11 @@ KRTCMediaBase::KRTCMediaBase(const STREAM_CONTROL_TYPE& type,
 	}
 
 	std::string control;
-	if (type == STREAM_CONTROL_TYPE::PUSH_TYPE) {
+	if (type == CONTROL_TYPE::PUSH) {
 		// http://1.14.148.67:1985/rtc/v1/publish/
 		control = "publish";
 	}
-	else if (type == STREAM_CONTROL_TYPE::PULL_TYPE) {
+	else if (type == CONTROL_TYPE::PULL) {
 		// http://1.14.148.67:1985/rtc/v1/play/
 		control = "play";
 	}
@@ -33,11 +33,8 @@ KRTCMediaBase::KRTCMediaBase(const STREAM_CONTROL_TYPE& type,
 
 	// webrtc://1.14.148.67/live/livestream
 	webrtcStreamUrl_ = "webrtc://" + server_ip + "/live/" + channel_;
-
 }
 
-
 KRTCMediaBase::~KRTCMediaBase() {}
-
 
 } // namespace krtc

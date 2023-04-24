@@ -7,6 +7,7 @@
 #include <QMetaType>
 
 #include "krtc/krtc.h"
+#include "YUVOpenGLWidget.h"
 
 #include "defs.h"
 
@@ -29,6 +30,8 @@ private slots:
     void onStartPushBtnClicked();
     void onStartPullBtnClicked();
     void onShowToast(const QString& toast, bool err);
+    void OnCapturePureVideoFrameSlots(MediaFrameSharedPointer videoFrame);
+    void OnPullVideoFrameSlots(MediaFrameSharedPointer videoFrame);
 
 signals:
     void showToastSignal(const QString& toast, bool err);
@@ -37,6 +40,8 @@ signals:
     void previewFailedSignal();
     void pushFailedSignal();
     void pullFailedSignal();
+    void pureVideoFrameSignal(MediaFrameSharedPointer videoFrame);
+    void pullVideoFrameSignal(MediaFrameSharedPointer videoFrame);
 
 private:
     Ui::MainWindow *ui;
@@ -64,13 +69,13 @@ private:
     void OnVideoSourceFailed(krtc::KRTCError err) override;
     void OnPreviewSuccess() override;
     void OnPreviewFailed(krtc::KRTCError err) override;
-    //void OnNetworkInfo(int64_t rtt_ms, int32_t packets_lost, uint8_t fraction_lost,
-    //    uint32_t jitter) override;
     void OnNetworkInfo(uint64_t rtt_ms, uint64_t packets_lost, double fraction_lost) override;
     void OnPushSuccess() override;
     void OnPushFailed(krtc::KRTCError err) override;
     void OnPullSuccess() override;
     void OnPullFailed(krtc::KRTCError err) override;
+    void OnCapturePureVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) override;
+    void OnPullVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) override;
 
 private:
     krtc::IVideoHandler* cam_source_ = nullptr;

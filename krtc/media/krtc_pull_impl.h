@@ -13,6 +13,7 @@
 #include "krtc/tools/utils.h"
 #include "krtc/render/video_renderer.h"
 #include "krtc/media/krtc_media_base.h"
+#include "krtc/base/krtc_http.h"
 
 namespace krtc {
 
@@ -30,7 +31,6 @@ public:
     explicit KRTCPullImpl(const std::string& server_addr,
                           const std::string& pull_channel,
                           const int& hwnd);
-
     ~KRTCPullImpl();
 
     void Start();
@@ -64,14 +64,14 @@ private:
 
     void OnFailure(webrtc::RTCError error) override;
 
-private:
-    rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
-        peer_connection_factory_;
+    void handleHttpPullResponse(const HttpReply& reply);
 
+private:
+    rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>peer_connection_factory_;
     std::unique_ptr<VideoRenderer> remote_renderer_;
 
 };
 
-}
+} // namespace krtc
 
 #endif // KRTCSDK_KRTC_MEDIA_KRTC_PULL_IMPL_H_

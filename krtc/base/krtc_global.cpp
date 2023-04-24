@@ -12,7 +12,6 @@
 
 namespace krtc {
 
-// 单例
 KRTCGlobal* KRTCGlobal::Instance() {
     static KRTCGlobal* const instance = new KRTCGlobal();
     return instance;
@@ -34,7 +33,9 @@ KRTCGlobal::KRTCGlobal() :
     network_thread_->SetName("network_thread", nullptr);
     network_thread_->Start();
 
-     // 在worker_thread创建并初始化音频设备
+    http_manager_ = new HttpManager();
+    http_manager_->Start();
+
     worker_thread_->PostTask(webrtc::ToQueuedTask([=]() {
         audio_device_ = webrtc::AudioDeviceModule::Create(
             webrtc::AudioDeviceModule::kPlatformDefaultAudio,
@@ -45,9 +46,7 @@ KRTCGlobal::KRTCGlobal() :
     DesktopCapturer::GetScreenSourceList(screen_source_list_);
 }
 
-KRTCGlobal::~KRTCGlobal() {
-
-}
+KRTCGlobal::~KRTCGlobal() {}
 
 webrtc::PeerConnectionFactoryInterface* KRTCGlobal::push_peer_connection_factory()
 {
@@ -81,7 +80,6 @@ void KRTCGlobal::CreateVcmCapturerSource(const char* cam_id)
 
         SetCurrentCaptureType(CAPTURE_TYPE::CAMERA);
     }));
-
 }
 
 void KRTCGlobal::StartVcmCapturerSource()

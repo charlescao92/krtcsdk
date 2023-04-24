@@ -10,6 +10,7 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "-pthread")
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
@@ -19,6 +20,8 @@ set(PROJECT_SOURCES
         src/mainwindow.cpp
         src/mainwindow.h
         src/mainwindow.ui
+        src/YUVOpenGLWidget.cpp
+        src/YUVOpenGLWidget.h
         src/defs.h
 )
 
@@ -46,23 +49,61 @@ else()
 endif()
 
 include_directories(
-	${KRTC_DIR}
+    ${KRTC_DIR}
+    ${KRTC_DIR}/examples/qtdemo
 )
 
 link_directories(
-	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 )
 
-target_link_libraries(qtdemo PRIVATE Qt${QT_VERSION_MAJOR}::Widgets krtc)
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+    message(STATUS "Current platform: Windows")
 
-set_target_properties(qtdemo PROPERTIES
-    MACOSX_BUNDLE_GUI_IDENTIFIER charlescao92.cn
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
-    WIN32_EXECUTABLE TRUE
-    LINK_FLAGS "/SUBSYSTEM:CONSOLE /SAFESEH:NO"
-)
+    target_link_libraries(qtdemo PRIVATE Qt${QT_VERSION_MAJOR}::Widgets krtc)
+
+    set_target_properties(qtdemo PROPERTIES
+        MACOSX_BUNDLE_GUI_IDENTIFIER charlescao92.cn
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+        MACOSX_BUNDLE TRUE
+        WIN32_EXECUTABLE TRUE
+        LINK_FLAGS "/SUBSYSTEM:CONSOLE /SAFESEH:NO"
+    )
+
+elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    #sudo ln -s /lib/x86_64-linux-gnu/libglib-2.0.so.0 /lib/x86_64-linux-gnu/libglib-2.0.so
+    #sudo ln -s /lib/x86_64-linux-gnu/libgio-2.0.so.0 /lib/x86_64-linux-gnu/libgio-2.0.so
+    #sudo ln -s /usr/lib/x86_64-linux-gnu/libXrandr.so.2 /usr/lib/x86_64-linux-gnu/libXrandr.so
+    #sudo ln -s /usr/lib/x86_64-linux-gnu/libXtst.so.6 /usr/lib/x86_64-linux-gnu/libXtst.so
+    #sudo ln -s /usr/lib/x86_64-linux-gnu/libXdamage.so.1 /usr/lib/x86_64-linux-gnu/libXdamage.so
+    #sudo ln -s /usr/lib/x86_64-linux-gnu/libXfixes.so.3 /usr/lib/x86_64-linux-gnu/libXfixes.so
+    #sudo ln -s /usr/lib/x86_64-linux-gnu/libXcomposite.so.1 /usr/lib/x86_64-linux-gnu/libXcomposite.so
+    #sudo ln -s /usr/lib/x86_64-linux-gnu/libgbm.so.1 /usr/lib/x86_64-linux-gnu/libgbm.so
+    target_link_libraries(qtdemo PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libkrtc.so
+        -lglib-2.0
+        -lgio-2.0
+        -lXrandr
+        -lXtst
+        -lXdamage
+        -lXfixes
+        -lXcomposite
+        -lgbm
+        -latomic
+        -lssl
+        -lcrypto
+        -ldl
+        )
+
+    set_target_properties(qtdemo PROPERTIES
+        MACOSX_BUNDLE_GUI_IDENTIFIER charlescao92.cn
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+        MACOSX_BUNDLE TRUE
+    )
+endif()
+
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(qtdemo)

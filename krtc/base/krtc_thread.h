@@ -5,15 +5,15 @@
 
 namespace krtc {
 
-    class KRTCThread {
-    public:
-        KRTCThread(rtc::Thread* current_thread);
-        rtc::Thread* CurrentThread() { return current_thread_; }
+class KRTCThread {
+public:
+    KRTCThread(rtc::Thread* current_thread);
+    rtc::Thread* CurrentThread() { return current_thread_; }
 
-    private:
-        rtc::Thread* current_thread_;
+private:
+    rtc::Thread* current_thread_;
 
-    };
+};
 
 } // namespace krtc
 

@@ -1,7 +1,7 @@
 // webrtc test/test_video_capturer.h
 
-#ifndef KRTC_DEVICE_VCM_CAPTURER_H_
-#define KRTC_DEVICE_VCM_CAPTURER_H_
+#ifndef KRTCSDK_KRTC_DEVICE_VCM_CAPTURER_H_
+#define KRTCSDK_KRTC_DEVICE_VCM_CAPTURER_H_
 
 #include <memory>
 #include <vector>
@@ -71,14 +71,10 @@ namespace krtc {
  protected:
 	 explicit VcmCapturerTrackSource(std::unique_ptr<VcmCapturer> capture)
 		 : VideoTrackSource(false)
-		 , capture_(std::move(capture))
-	 {
-
-	 }
+		 , capture_(std::move(capture)) {}
 
  private:
-	 rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override
-	 {
+	 rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
 		 return capture_.get();
 	 }
 
@@ -87,4 +83,4 @@ namespace krtc {
 
 }  // namespace krtc
 
-#endif  // KRTC_DEVICE_VCM_CAPTURER_H_
+#endif  // KRTCSDK_KRTC_DEVICE_VCM_CAPTURER_H_

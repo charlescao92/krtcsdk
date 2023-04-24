@@ -13,7 +13,6 @@ public:
     virtual void OnStatsInfo(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) = 0;
 };
 
-
 class CRtcStatsCollector : public webrtc::RTCStatsCollectorCallback {
 public:
     CRtcStatsCollector(StatsObserver* observer = nullptr);
@@ -26,6 +25,6 @@ private:
     StatsObserver* observer_ = nullptr;
 };
 
-}
+} // namespace krtc
 
 #endif // KRTCSDK_KRTC_MEDIA_STATS_COLLECTOR_H_

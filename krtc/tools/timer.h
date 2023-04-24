@@ -1,4 +1,5 @@
-#pragma once
+#ifndef KRTCSDK_KRTC_TOOLS_TIMER_H_
+#define KRTCSDK_KRTC_TOOLS_TIMER_H_
 
 #include <iostream>
 #include <string>
@@ -30,9 +31,11 @@ private:
 	bool repeat_ = false;
 	OnTask func_;
 
-	std::atomic_bool immediately_run_ = false; // ÊÇ·ñÁ¢¼´Ö´ĞĞ
-	std::atomic_bool exit_ = false;
+    std::atomic_bool immediately_run_{false}; // æ˜¯å¦ç«‹å³æ‰§è¡Œ
+    std::atomic_bool exit_{false};
 	std::thread thread_;
 	std::mutex mutex_;
 	std::condition_variable cond_;
 };
+
+#endif // KRTCSDK_KRTC_TOOLS_TIMER_H_

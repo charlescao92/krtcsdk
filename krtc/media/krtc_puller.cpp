@@ -17,30 +17,27 @@ KRTCPuller::KRTCPuller(const std::string& server_addr, const std::string& push_c
 }
 
 KRTCPuller::~KRTCPuller() {
-
 }
 
 void KRTCPuller::Start() {
-    RTC_LOG(LS_INFO) << "KRTCPuller StartPull call";
+    RTC_LOG(LS_INFO) << "KRTCPuller Start";
 
     if (pull_impl_) {
         pull_impl_->Start();
     }
-
 }
 
 void KRTCPuller::Stop() {
-    RTC_LOG(LS_INFO) << "KRTCPuller StopPull call";
+    RTC_LOG(LS_INFO) << "KRTCPuller Stop";
 
     if (pull_impl_) {
         pull_impl_->Stop();
         pull_impl_ = nullptr;
     }
-
 }
 
 void KRTCPuller::Destroy() {
-    RTC_LOG(LS_INFO) << "KRTCPuller Destroy call";
+    RTC_LOG(LS_INFO) << "KRTCPuller Destroy";
 
     delete this;
 }

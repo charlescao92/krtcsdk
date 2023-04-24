@@ -5,73 +5,73 @@
 
 namespace krtc {
 
-    enum class MainMediaType {
-        kMainTypeCommon,
-        kMainTypeAudio,
-        kMainTypeVideo,
-        kMainTypeData   // ÎÄ±¾ĞÅÏ¢£¬»òÕßÃ½ÌåĞÅÏ¢ÀàĞÍ
-    };
+enum class MainMediaType {
+    kMainTypeCommon,
+    kMainTypeAudio,
+    kMainTypeVideo,
+    kMainTypeData   // æ–‡æœ¬ä¿¡æ¯ï¼Œæˆ–è€…åª’ä½“ä¿¡æ¯ç±»å‹
+};
 
-    enum class SubMediaType {
-        kSubTypeCommon,
-        kSubTypeI420,
-        kSubTypeH264,
-        kSubTypePcm,
-        kSubTypeOpus,
-    };
+enum class SubMediaType {
+    kSubTypeCommon,
+    kSubTypeI420,
+    kSubTypeH264,
+    kSubTypePcm,
+    kSubTypeOpus,
+};
 
-    struct AudioFormat {
-        SubMediaType type;
-        size_t nbytes_per_sample;   // Ñù±¾×Ö½ÚÊı£¬16bit
-        size_t samples_per_channel; // Ã¿¸öÉùµÀµÄ²ÉÑùÊı
-        size_t channels;            // Í¨µÀÊı
-        uint32_t samples_per_sec;   // ²ÉÑùÂÊ
-        uint32_t total_delay_ms;    // ÑÓ³ÙÊ±¼ä£¬»ØÉùÏû³ı»áÓÃµ½
-        bool key_pressed;           // ¼üÅÌ°´¼ü¶¯×÷£¬½µÔë»áÓÃµ½
-    };
+struct AudioFormat {
+    SubMediaType type;
+    size_t nbytes_per_sample;   // æ ·æœ¬å­—èŠ‚æ•°ï¼Œ16bit
+    size_t samples_per_channel; // æ¯ä¸ªå£°é“çš„é‡‡æ ·æ•°
+    size_t channels;            // é€šé“æ•°
+    uint32_t samples_per_sec;   // é‡‡æ ·ç‡
+    uint32_t total_delay_ms;    // å»¶è¿Ÿæ—¶é—´ï¼Œå›å£°æ¶ˆé™¤ä¼šç”¨åˆ°
+    bool key_pressed;           // é”®ç›˜æŒ‰é”®åŠ¨ä½œï¼Œé™å™ªä¼šç”¨åˆ°
+};
 
-    struct KRTC_API VideoFormat {
-        SubMediaType type;
-        int width;
-        int height;
-        bool idr; // ÊÇ·ñÊÇ¹Ø¼üÖ¡
-    };
+struct KRTC_API VideoFormat {
+    SubMediaType type;
+    int width;
+    int height;
+    bool idr; // æ˜¯å¦æ˜¯å…³é”®å¸§
+};
 
-    class KRTC_API MediaFormat {
-    public:
-        MainMediaType media_type;
-        union {
-            AudioFormat audio_fmt;
-            VideoFormat video_fmt;
-        } sub_fmt;
-    };
+class KRTC_API MediaFormat {
+public:
+    MainMediaType media_type;
+    union {
+        AudioFormat audio_fmt;
+        VideoFormat video_fmt;
+    } sub_fmt;
+};
 
-    class KRTC_API MediaFrame {
-    public:
-        MediaFrame(int size) : max_size(size) {
-            memset(data, 0, sizeof(data));
-            memset(data_len, 0, sizeof(data_len));
-            memset(stride, 0, sizeof(stride));
-            data[0] = new char[size];
-            data_len[0] = size;
+class KRTC_API MediaFrame {
+public:
+    MediaFrame(int size) : max_size(size) {
+        memset(data, 0, sizeof(data));
+        memset(data_len, 0, sizeof(data_len));
+        memset(stride, 0, sizeof(stride));
+        data[0] = new char[size];
+        data_len[0] = size;
+    }
+
+    ~MediaFrame() {
+        if (data[0]) {
+            delete[] data[0];
+            data[0] = nullptr;
         }
+    }
 
-        ~MediaFrame() {
-            if (data[0]) {
-                delete[] data[0];
-                data[0] = nullptr;
-            }
-        }
-
-    public:
-        int max_size;                // ½á¹¹×î´óÈİÁ¿
-        MediaFormat fmt;             // Ã½ÌåÀàĞÍ£¬ÊÓÆµ»òÕßÒôÆµ
-        char* data[4];               // Ä¬ÈÏÓÃ4¸öÆ½ÃæÊı×éÀ´´æ´¢Êı¾İ
-        int data_len[4];             // Ã¿¸öÆ½ÃæÊı×éµÄ×Ö½Ú´óĞ¡
-        int stride[4];               // Ã¿Ò»ĞĞµÄ´óĞ¡
-        uint32_t ts = 0;             // Ö¡µÄÊ±¼ä´Á
-        int64_t capture_time_ms = 0; // ²É¼¯Ê±¼ä
-    };
+public:
+    int max_size;                // ç»“æ„æœ€å¤§å®¹é‡
+    MediaFormat fmt;             // åª’ä½“ç±»å‹ï¼Œè§†é¢‘æˆ–è€…éŸ³é¢‘
+    char* data[4];               // é»˜è®¤ç”¨4ä¸ªå¹³é¢æ•°ç»„æ¥å­˜å‚¨æ•°æ®
+    int data_len[4];             // æ¯ä¸ªå¹³é¢æ•°ç»„çš„å­—èŠ‚å¤§å°
+    int stride[4];               // æ¯ä¸€è¡Œçš„å¤§å°
+    uint32_t ts = 0;             // å¸§çš„æ—¶é—´æˆ³
+    int64_t capture_time_ms = 0; // é‡‡é›†æ—¶é—´
+};
 
 } // namespace krtc
 

@@ -24,13 +24,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::initWindow()
 {
-	setWindowTitle(QStringLiteral("srs native webrtc推拉流-qtdemo"));
+	setWindowTitle(QStringLiteral("srs webrtc推拉流qtdemo"));
     setMinimumSize(1200, 600);
 	
 	ui->leftWidget->setFixedWidth(250);
 
-	ui->previewWidget->setMinimumSize(400,400);
-	ui->pullWidget->setMinimumSize(400, 400);
+	ui->previewOpenGLWidget->setMinimumSize(400,400);
+	ui->pullOpenGLWidget->setMinimumSize(400, 400);
 
     ui->serverLineEdit->setText("1.14.148.67:1985");
     ui->uidLineEdit->setText("111");
@@ -39,8 +39,6 @@ void MainWindow::initWindow()
 	ui->statusLabel->setText("");
 
 	ui->pullStreamNameLineEdit->setText("livestream");
-
-	
 	ui->pullUidLineEdit->setText("222");
 	ui->cameraRadioButton->setChecked(true);
 
@@ -54,6 +52,10 @@ void MainWindow::initWindow()
         this, &MainWindow::onStartPullBtnClicked);
 	connect(this, &MainWindow::showToastSignal,
 		this, &MainWindow::onShowToast, Qt::QueuedConnection);
+	connect(this, &MainWindow::pureVideoFrameSignal,
+		this, &MainWindow::OnCapturePureVideoFrameSlots, Qt::QueuedConnection);
+	connect(this, &MainWindow::pullVideoFrameSignal,
+		this, &MainWindow::OnPullVideoFrameSlots, Qt::QueuedConnection);
 
 	connect(this, &MainWindow::networkInfoSignal,
 		[this](const QString& text) {
@@ -80,12 +82,12 @@ void MainWindow::initWindow()
 			ui->startPullBtn->setText(QStringLiteral("开始拉流"));
 		});
 
-	krtc::KRTCEngine::Init(krtc::CONTROL_TYPE::BOTH, this);
+	krtc::KRTCEngine::Init(this);
 
 	initVideoComboBox();
 	initAudioComboBox();
 
-	qRegisterMetaType<std::shared_ptr<krtc::MediaFrame>>("std::shared_ptr<krtc::MediaFrame>");
+	qRegisterMetaType<MediaFrameSharedPointer>("MediaFrameSharedPointer");
 
 }
 
@@ -99,8 +101,7 @@ void MainWindow::initVideoComboBox()
 	for (int i = 0; i < total; ++i) {
 		char device_name[128] = { 0 };
 		char device_id[128] = { 0 };
-		krtc::KRTCEngine::GetCameraInfo(i, device_name, sizeof(device_name),
-			device_id, sizeof(device_id));
+        krtc::KRTCEngine::GetCameraInfo(i, device_name, sizeof(device_name), device_id, sizeof(device_id));
 
 		QVariant useVar;
 		DeviceInfo info = { device_name, device_id };
@@ -119,8 +120,7 @@ void MainWindow::initAudioComboBox()
 	for (int i = 0; i < total; ++i) {
 		char device_name[128] = { 0 };
 		char device_id[128] = { 0 };
-		krtc::KRTCEngine::GetMicInfo(i, device_name, sizeof(device_name),
-			device_id, sizeof(device_id));
+        krtc::KRTCEngine::GetMicInfo(i, device_name, sizeof(device_name), device_id, sizeof(device_id));
 
 		QVariant useVar;
 		DeviceInfo info = { device_name, device_id };
@@ -208,6 +208,16 @@ void MainWindow::onShowToast(const QString& toast, bool err)
 	ui->statusLabel->setText(toast);
 }
 
+void MainWindow::OnCapturePureVideoFrameSlots(MediaFrameSharedPointer videoFrame)
+{
+	ui->previewOpenGLWidget->updateFrame(videoFrame);
+}
+
+void MainWindow::OnPullVideoFrameSlots(MediaFrameSharedPointer videoFrame)
+{
+	ui->pullOpenGLWidget->updateFrame(videoFrame);
+}
+
 bool MainWindow::startDevice() {
 	if (!video_init_) {
 		if (ui->cameraRadioButton->isChecked()) {
@@ -267,13 +277,15 @@ bool MainWindow::startPreview() {
 		return false;
 	}
 
+#if 0
 	HWND hwnd = (HWND)ui->previewWidget->winId();
 	if (!hwnd) {
 		showToast(QStringLiteral("预览失败：没有显示窗口"), true);
 		return false;
 	}
-
-	krtc_preview_ = krtc::KRTCEngine::CreatePreview((int)hwnd);
+#endif
+	
+    krtc_preview_ = krtc::KRTCEngine::CreatePreview();
 	krtc_preview_->Start();
 
 	return true;
@@ -324,19 +336,14 @@ bool MainWindow::stopPush() {
 
 bool MainWindow::startPull()
 {
-	HWND hwnd = (HWND)ui->pullWidget->winId();
-	if (!hwnd) {
-		showToast(QStringLiteral("拉流失败：没有显示窗口"), true);
-		return false;
-	}
-
 	QString url = ui->serverLineEdit->text();
 	if (url.isEmpty()) {
 		showToast(QStringLiteral("拉流失败：没有服务器地址"), true);
 		return false;
 	}
-	QString channel = ui->pushStreamNamelineEdit->text();
-	krtc_puller_ = krtc::KRTCEngine::CreatePuller(url.toUtf8().constData(), channel.toUtf8().constData(), (int)hwnd);
+
+	QString channel = ui->pullStreamNameLineEdit->text();
+    krtc_puller_ = krtc::KRTCEngine::CreatePuller(url.toUtf8().constData(), channel.toUtf8().constData());
 	krtc_puller_->Start();
 
 	return true;
@@ -374,7 +381,6 @@ void MainWindow::OnAudioSourceFailed(krtc::KRTCError err)
 }
 
 void MainWindow::OnVideoSourceSuccess() {
-	// api_thread
 	video_init_ = true;
 	showToast(QStringLiteral("摄像头启动成功"), false);
 }
@@ -425,11 +431,66 @@ void MainWindow::OnPullFailed(krtc::KRTCError err) {
 	emit pullFailedSignal();
 }
 
+void MainWindow::OnCapturePureVideoFrame(std::shared_ptr<krtc::MediaFrame> frame)
+{
+	int src_width = frame->fmt.sub_fmt.video_fmt.width;
+	int src_height = frame->fmt.sub_fmt.video_fmt.height;
+	int stridey = frame->stride[0];
+	int strideu = frame->stride[1];
+	int stridev = frame->stride[2];
+	int size = stridey * src_height + (strideu + stridev) * ((src_height + 1) / 2);
+
+	MediaFrameSharedPointer video_frame(new krtc::MediaFrame(size));
+	video_frame->fmt.sub_fmt.video_fmt.type = krtc::SubMediaType::kSubTypeI420;
+	video_frame->fmt.sub_fmt.video_fmt.width = src_width;
+	video_frame->fmt.sub_fmt.video_fmt.height = src_height;
+	video_frame->stride[0] = stridey;
+	video_frame->stride[1] = strideu;
+	video_frame->stride[2] = stridev;
+	video_frame->data_len[0] = stridey * src_height;
+	video_frame->data_len[1] = strideu * ((src_height + 1) / 2);
+	video_frame->data_len[2] = stridev * ((src_height + 1) / 2);
+	video_frame->data[1] = video_frame->data[0] + video_frame->data_len[0];
+	video_frame->data[2] = video_frame->data[1] + video_frame->data_len[1];
+	memcpy(video_frame->data[0], frame->data[0], frame->data_len[0]);
+	memcpy(video_frame->data[1], frame->data[1], frame->data_len[1]);
+	memcpy(video_frame->data[2], frame->data[2], frame->data_len[2]);
+
+	emit pureVideoFrameSignal(video_frame);
+}
+
+void MainWindow::OnPullVideoFrame(std::shared_ptr<krtc::MediaFrame> frame)
+{
+	int src_width = frame->fmt.sub_fmt.video_fmt.width;
+	int src_height = frame->fmt.sub_fmt.video_fmt.height;
+	int stridey = frame->stride[0];
+	int strideu = frame->stride[1];
+	int stridev = frame->stride[2];
+	int size = stridey * src_height + (strideu + stridev) * ((src_height + 1) / 2);
+
+	MediaFrameSharedPointer video_frame(new krtc::MediaFrame(size));
+	video_frame->fmt.sub_fmt.video_fmt.type = krtc::SubMediaType::kSubTypeI420;
+	video_frame->fmt.sub_fmt.video_fmt.width = src_width;
+	video_frame->fmt.sub_fmt.video_fmt.height = src_height;
+	video_frame->stride[0] = stridey;
+	video_frame->stride[1] = strideu;
+	video_frame->stride[2] = stridev;
+	video_frame->data_len[0] = stridey * src_height;
+	video_frame->data_len[1] = strideu * ((src_height + 1) / 2);
+	video_frame->data_len[2] = stridev * ((src_height + 1) / 2);
+	video_frame->data[1] = video_frame->data[0] + video_frame->data_len[0];
+	video_frame->data[2] = video_frame->data[1] + video_frame->data_len[1];
+	memcpy(video_frame->data[0], frame->data[0], frame->data_len[0]);
+	memcpy(video_frame->data[1], frame->data[1], frame->data_len[1]);
+	memcpy(video_frame->data[2], frame->data[2], frame->data_len[2]);
+
+	emit pullVideoFrameSignal(video_frame);
+}
 
 void MainWindow::OnNetworkInfo(uint64_t rtt_ms, uint64_t packets_lost, double fraction_lost)
 {
 	char str[256] = { 0 };
-	snprintf(str, sizeof(str), "rtt=%lldms 累计丢包数=%lld 丢包指数=%d",
+	snprintf(str, sizeof(str), "rtt=%lldms 累计丢包数=%lld 丢包指数=%f",
 		rtt_ms, packets_lost, fraction_lost);
 	QString networkInfo = QString::fromLocal8Bit(str);
 	emit networkInfoSignal(networkInfo);

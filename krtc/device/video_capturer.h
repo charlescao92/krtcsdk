@@ -1,14 +1,5 @@
-/*
- *  Copyright (c) 2013 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree. An additional intellectual property rights grant can be found
- *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the source tree.
- */
-#ifndef KRTC_DEVICE_VIDEO_CAPTURER_H_
-#define KRTC_DEVICE_VIDEO_CAPTURER_H_
+#ifndef KRTCSDK_KRTC_DEVICE_VIDEO_CAPTURER_H_
+#define KRTCSDK_KRTC_DEVICE_VIDEO_CAPTURER_H_
 
 #include <stddef.h>
 
@@ -65,4 +56,4 @@ private:
 
 }  // namespace krtc
 
-#endif  // KRTC_DEVICE_VIDEO_CAPTURER_H_
+#endif  // KRTCSDK_KRTC_DEVICE_VIDEO_CAPTURER_H_

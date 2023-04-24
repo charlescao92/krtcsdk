@@ -91,10 +91,7 @@ public:
 protected:
 	explicit DesktopCapturerTrackSource(std::unique_ptr<DesktopCapturer> capture)
 		: VideoTrackSource(false)
-		, capture_(std::move(capture))
-	{
-
-	}
+		, capture_(std::move(capture)) {}
 
 private:
 	rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override

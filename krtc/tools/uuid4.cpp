@@ -1,10 +1,3 @@
-/**
- * Copyright (c) 2018 rxi
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the MIT license. See LICENSE for details.
- */
-
 #include <stdio.h>
 #include <stdint.h>
 
@@ -15,9 +8,7 @@
 
 #include "krtc/tools/uuid4.h"
 
-
 static uint64_t seed[2];
-
 
 static uint64_t xorshift128plus(uint64_t *s) {
   /* http://xorshift.di.unimi.it/xorshift128plus.c */

@@ -35,13 +35,16 @@
 #include "krtc/device/vcm_capturer.h"
 #include "krtc/base/krtc_http.h"
 #include "krtc/base/krtc_global.h"
-#include "krtc/device/krtc_audio_track.h"
+#include "krtc/device/audio_track.h"
 #include "krtc/tools/timer.h"
 
 namespace krtc {
 
 KRTCPushImpl::KRTCPushImpl(const std::string& server_addr, const std::string& push_channel) :
-    KRTCMediaBase(STREAM_CONTROL_TYPE::PUSH_TYPE, server_addr, push_channel){}
+    KRTCMediaBase(CONTROL_TYPE::PUSH, server_addr, push_channel)
+{
+    KRTCGlobal::Instance()->http_manager()->AddObject(this);
+}
 
 KRTCPushImpl::~KRTCPushImpl() {
     RTC_DCHECK(!peer_connection_);
@@ -66,11 +69,9 @@ void KRTCPushImpl::Start() {
     peer_connection_->AddTransceiver(cricket::MediaType::MEDIA_TYPE_VIDEO,
         rtpTransceiverInit);
 
-    // 创建音频源
     cricket::AudioOptions options;
     rtc::scoped_refptr<LocalAudioSource> audio_source(LocalAudioSource::Create(&options));
 
-    // 添加音频轨
     rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(
             peer_connection_factory->CreateAudioTrack(kAudioLabel, audio_source));
     auto add_audio_track_result = peer_connection_->AddTrack(audio_track, { kStreamId });
@@ -79,7 +80,6 @@ void KRTCPushImpl::Start() {
             << add_audio_track_result.error().message();
     }
 
-    // 添加视频轨
     rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(
         peer_connection_factory->CreateVideoTrack(
             kAudioLabel, KRTCGlobal::Instance()->current_video_source()));
@@ -130,19 +130,16 @@ void KRTCPushImpl::GetRtcStats() {
 
 void KRTCPushImpl::OnDataChannel(
     rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
-    RTC_LOG(INFO) << __FUNCTION__;
 }
 
 // CreateSessionDescriptionObserver implementation.
 void KRTCPushImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
-    RTC_LOG(INFO) << __FUNCTION__;
-
     peer_connection_->SetLocalDescription(
         DummySetSessionDescriptionObserver::Create(), desc);
 
     std::string sdpOffer;
     desc->ToString(&sdpOffer);
-    RTC_LOG(INFO) << "sdp Offer:" << sdpOffer;
+    RTC_LOG(INFO) << "sdp offer:" << sdpOffer;
 
     Json::Value reqMsg;
     reqMsg["api"] = httpRequestUrl_;
@@ -154,10 +151,50 @@ void KRTCPushImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
 
     RTC_LOG(LS_INFO) << "send webrtc push request.....";
 
-    std::string responseBody;
-    Http::HTTPERROR errCode = httpExecRequest("POST", httpRequestUrl_, responseBody, json_data);
-    if (errCode != Http::HTTPERROR_SUCCESS) {
-        RTC_LOG(INFO) << "http post error : " << httpErrorString(errCode);
+    HttpRequest request(httpRequestUrl_, json_data);
+    KRTCGlobal::Instance()->http_manager()->Post(request, [=](HttpReply reply) {
+
+        KRTCGlobal::Instance()->api_thread()->PostTask(webrtc::ToQueuedTask([=]() {
+            handleHttpPushResponse(reply);
+        }));
+
+    }, this);
+
+}
+
+void KRTCPushImpl::OnFailure(webrtc::RTCError error) {
+    if (KRTCGlobal::Instance()->engine_observer()) {
+        KRTCGlobal::Instance()->engine_observer()->OnPushFailed(KRTCError::kCreateOfferErr);
+    }
+}
+
+void KRTCPushImpl::OnStatsInfo(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+    Json::Reader reader;
+
+    for (auto it = report->begin(); it != report->end(); ++it) {
+        Json::Value jmessage;
+        if (!reader.parse(it->ToJson(), jmessage)) {
+            RTC_LOG(WARNING) << "stats report invalid!!!";
+            return;
+        }
+
+        std::string type = jmessage["type"].asString();
+        if (type == "outbound-rtp") {
+
+            uint64_t rtt_ms = jmessage["rttMs"].asUInt64();
+            uint64_t packetsLost = jmessage["packetsLost"].asUInt64();
+            double fractionLost = jmessage["fractionLost"].asDouble();
+
+            if (KRTCGlobal::Instance()->engine_observer()) {
+                KRTCGlobal::Instance()->engine_observer()->OnNetworkInfo(rtt_ms, packetsLost, fractionLost);
+            }
+        }
+    }
+}
+
+void KRTCPushImpl::handleHttpPushResponse(const HttpReply &reply) {
+    if (reply.get_status_code() != 200 || reply.get_errno() != 0) {
+        RTC_LOG(INFO) << "http post error";
 
         if (KRTCGlobal::Instance()->engine_observer()) {
             KRTCGlobal::Instance()->engine_observer()->OnPushFailed(KRTCError::kSendOfferErr);
@@ -165,7 +202,7 @@ void KRTCPushImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
         return;
     }
 
-    // 解析srs服务器发回来的json数据
+    std::string responseBody = reply.get_resp();
     Json::CharReaderBuilder builder;
     std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
     Json::Value root;
@@ -207,45 +244,11 @@ void KRTCPushImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
         KRTCGlobal::Instance()->engine_observer()->OnPushSuccess();
     }
 
-    // 开始获取推流状态信息
     assert(stats_timer_ == nullptr);
     stats_timer_ = std::make_unique<CTimer>(1 * 1000, true, [this]() {
-          GetRtcStats(); 
+          GetRtcStats();
     });
     stats_timer_->Start();
-}
-
-void KRTCPushImpl::OnFailure(webrtc::RTCError error) {
-    RTC_LOG(INFO) << __FUNCTION__;
-
-    if (KRTCGlobal::Instance()->engine_observer()) {
-        KRTCGlobal::Instance()->engine_observer()->OnPushFailed(KRTCError::kCreateOfferErr);
-    }
-}
-
-void KRTCPushImpl::OnStatsInfo(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report)
-{
-    Json::Reader reader;
-
-    for (auto it = report->begin(); it != report->end(); ++it) {
-        Json::Value jmessage;
-        if (!reader.parse(it->ToJson(), jmessage)) {
-            RTC_LOG(WARNING) << "stats report invalid!!!";
-            return;
-        }
-
-        std::string type = jmessage["type"].asString();
-        if (type == "outbound-rtp") {
-
-            uint64_t rtt_ms = jmessage["rttMs"].asUInt64();
-            uint64_t packetsLost = jmessage["packetsLost"].asUInt64();
-            double fractionLost = jmessage["fractionLost"].asDouble();
-
-            if (KRTCGlobal::Instance()->engine_observer()) {
-                KRTCGlobal::Instance()->engine_observer()->OnNetworkInfo(rtt_ms, packetsLost, fractionLost);
-            }
-        }
-    }
 }
 
 } // namespace krtc

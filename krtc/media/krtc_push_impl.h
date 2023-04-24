@@ -12,6 +12,7 @@
 
 #include "krtc/media/krtc_media_base.h"
 #include "krtc/media/stats_collector.h"
+#include "krtc/base/krtc_http.h"
 
 class CTimer;
 
@@ -50,6 +51,8 @@ private:
 
     // StatsObserver implementation.
     void OnStatsInfo(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report);
+
+    void handleHttpPushResponse(const HttpReply& reply);
 
 private:
     rtc::scoped_refptr<CRtcStatsCollector> stats_;

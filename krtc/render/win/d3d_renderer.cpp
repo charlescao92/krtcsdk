@@ -21,7 +21,7 @@ std::unique_ptr<VideoRenderer> VideoRenderer::CreatePlatformRenderer(int hwnd,
 
 D3dRenderer::D3dRenderer(HWND hwnd, size_t width, size_t height)
     : hwnd_(hwnd),
-	width_(width),
+    width_(width),
     height_(height)  
 {
   RTC_DCHECK_GT(width, 0);
@@ -57,12 +57,7 @@ void D3dRenderer::Destroy() {
 	}
 }
 
-void D3dRenderer::HandleErr(const KRTCError& err)
-{
-	return;
-
-	
-}
+void D3dRenderer::HandleErr(const KRTCError& err) {}
 
 bool D3dRenderer::TryInit(const webrtc::VideoFrame& frame) {
 	KRTCError err = KRTCError::kNoErr;
@@ -99,7 +94,7 @@ bool D3dRenderer::TryInit(const webrtc::VideoFrame& frame) {
 		return false;
 	}
 
-	// 1. ´´½¨d3d9¶ÔÏó
+	// 1. åˆ›å»ºd3d9å¯¹è±¡
 	if (!d3d9_) {
 		d3d9_ = Direct3DCreate9(D3D_SDK_VERSION);
 		if (!d3d9_) {
@@ -109,21 +104,21 @@ bool D3dRenderer::TryInit(const webrtc::VideoFrame& frame) {
 		}
 	}
 
-	// 2. ¹¹½¨d3d9 device
+	// 2. æ„å»ºd3d9 device
 	if (!d3d9_device_) {
-		// ´´½¨Ò»¸öd3d9 device
+		// åˆ›å»ºä¸€ä¸ªd3d9 device
 		D3DPRESENT_PARAMETERS d3dpp;
 		ZeroMemory(&d3dpp, sizeof(d3dpp));
-		d3dpp.Windowed = true; // ´°¿ÚÄ£Ê½
-		// Ò»µ©ºóÌ¨»º³å±íÃæµÄÊı¾İ±»¸´ÖÆµ½ÆÁÄ»£¬ÄÇÃ´Õâ¸ö±íÃæµÄÊı¾İ¾ÍÃ»ÓĞÓÃÁË
+		d3dpp.Windowed = true; // çª—å£æ¨¡å¼
+		// ä¸€æ—¦åå°ç¼“å†²è¡¨é¢çš„æ•°æ®è¢«å¤åˆ¶åˆ°å±å¹•ï¼Œé‚£ä¹ˆè¿™ä¸ªè¡¨é¢çš„æ•°æ®å°±æ²¡æœ‰ç”¨äº†
 		d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 		d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
 
 		HRESULT res = d3d9_->CreateDevice(
-			D3DADAPTER_DEFAULT, // Ö¸¶¨Òª±íÊ¾µÄÎïÀíÉè±¸£¬Ä¬ÈÏÖ÷ÏÔÊ¾Æ÷
-			D3DDEVTYPE_HAL,     // Ö§³ÖÓ²¼ş¼ÓËÙ
-			hwnd_,              // äÖÈ¾´°¿Ú¾ä±ú                                                    
-			D3DCREATE_MIXED_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,// Ö¸¶¨¶¥µã´¦Àí·½Ê½£¬»ìºÏ&¶àÏß³Ì
+			D3DADAPTER_DEFAULT, // æŒ‡å®šè¦è¡¨ç¤ºçš„ç‰©ç†è®¾å¤‡ï¼Œé»˜è®¤ä¸»æ˜¾ç¤ºå™¨
+			D3DDEVTYPE_HAL,     // æ”¯æŒç¡¬ä»¶åŠ é€Ÿ
+			hwnd_,              // æ¸²æŸ“çª—å£å¥æŸ„                                                    
+			D3DCREATE_MIXED_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,// æŒ‡å®šé¡¶ç‚¹å¤„ç†æ–¹å¼ï¼Œæ··åˆ&å¤šçº¿ç¨‹
 			&d3dpp,
 			&d3d9_device_
 		);
@@ -135,18 +130,18 @@ bool D3dRenderer::TryInit(const webrtc::VideoFrame& frame) {
 		}
 	}
 
-	// 3. ´´½¨ÀëÆÁ±íÃæ
+	// 3. åˆ›å»ºç¦»å±è¡¨é¢
 	if (d3d9_surface_) {
 		d3d9_surface_->Release();
 		d3d9_surface_ = nullptr;
 	}
 
 	HRESULT res = res = d3d9_device_->CreateOffscreenPlainSurface(
-		frame.width(),						// ÀëÆÁ±íÃæµÄ¿í¶È
-		frame.height(),						// ÀëÆÁ±íÃæµÄ¸ß¶È
-		D3DFMT_X8R8G8B8,					// Í¼ÏñÏñËØ¸ñÊ½
-		D3DPOOL_DEFAULT,					// ×ÊÔ´¶ÔÓ¦µÄÄÚ´æÀàĞÍ
-		&d3d9_surface_,						// ·µ»Ø´´½¨µÄsurface
+		frame.width(),						// ç¦»å±è¡¨é¢çš„å®½åº¦
+		frame.height(),						// ç¦»å±è¡¨é¢çš„é«˜åº¦
+		D3DFMT_X8R8G8B8,					// å›¾åƒåƒç´ æ ¼å¼
+		D3DPOOL_DEFAULT,					// èµ„æºå¯¹åº”çš„å†…å­˜ç±»å‹
+		&d3d9_surface_,						// è¿”å›åˆ›å»ºçš„surface
 		NULL
 	);
 
@@ -178,9 +173,9 @@ std::unique_ptr<VideoRenderer> D3dRenderer::Create(
 void D3dRenderer::DoRender(const webrtc::VideoFrame& frame) {
 	rtc::scoped_refptr<webrtc::VideoFrameBuffer> vfb = frame.video_frame_buffer();
 	if (webrtc::VideoFrameBuffer::Type::kI420 == vfb.get()->type()) {
-		// 1. ´´½¨RGB buffer£¬½«YUV¸ñÊ½×ª»»³ÉRGB¸ñÊ½
-		int size = frame.width() * frame.height() * 4; // ¿¼ÂÇARGB£¬²»¿¼ÂÇÔòÊÇ³ËÒÔ3
-		if (rgb_buffer_size_ != size) {		// ±ÜÃâäÖÈ¾¹ı³ÌÖĞÍ¼Ïñ¿í¸ß·¢Éú±ä»¯
+		// 1. åˆ›å»ºRGB bufferï¼Œå°†YUVæ ¼å¼è½¬æ¢æˆRGBæ ¼å¼
+		int size = frame.width() * frame.height() * 4; // è€ƒè™‘ARGBï¼Œä¸è€ƒè™‘åˆ™æ˜¯ä¹˜ä»¥3
+		if (rgb_buffer_size_ != size) {		// é¿å…æ¸²æŸ“è¿‡ç¨‹ä¸­å›¾åƒå®½é«˜å‘ç”Ÿå˜åŒ–
 			if (rgb_buffer_) {
 				delete[] rgb_buffer_;
 			}
@@ -192,7 +187,7 @@ void D3dRenderer::DoRender(const webrtc::VideoFrame& frame) {
 		ConvertFromI420(frame, webrtc::VideoType::kARGB, 0,
 			(uint8_t*)rgb_buffer_);
 
-		// YUV¸ñÊ½×ª»»³ÉRGB
+		// YUVæ ¼å¼è½¬æ¢æˆRGB
 		/*libyuv::I420ToARGB((const uint8_t*)frame->data[0], frame->stride[0],
 			(const uint8_t*)frame->data[1], frame->stride[1],
 			(const uint8_t*)frame->data[2], frame->stride[2],
@@ -200,13 +195,13 @@ void D3dRenderer::DoRender(const webrtc::VideoFrame& frame) {
 			width_, height_);*/
 	}
 
-	// 2. ½«RGBÊı¾İ¿½±´µ½ÀëÆÁ±íÃæ
-	// 2.1 Ëø¶¨ÇøÓò
+	// 2. å°†RGBæ•°æ®æ‹·è´åˆ°ç¦»å±è¡¨é¢
+	// 2.1 é”å®šåŒºåŸŸ
 	HRESULT res;
 	D3DLOCKED_RECT d3d9_rect;
-	res = d3d9_surface_->LockRect(&d3d9_rect, // Ö¸ÏòÃèÊöËø¶¨ÇøÓòµÄ¾ØĞÎ½á¹¹Ö¸Õë
-		NULL, // ĞèÒªËø¶¨µÄÇøÓò£¬Èç¹ûNULL£¬±íÊ¾Õû¸ö±íÃæ
-		D3DLOCK_DONOTWAIT // µ±ÏÔ¿¨Ëø¶¨ÇøÓòÊ§°ÜµÄÊ±ºò£¬²»×èÈûÓ¦ÓÃ³ÌĞò,·µ»ØD3DERR_WASSTILLDRAWING
+	res = d3d9_surface_->LockRect(&d3d9_rect, // æŒ‡å‘æè¿°é”å®šåŒºåŸŸçš„çŸ©å½¢ç»“æ„æŒ‡é’ˆ
+		NULL, // éœ€è¦é”å®šçš„åŒºåŸŸï¼Œå¦‚æœNULLï¼Œè¡¨ç¤ºæ•´ä¸ªè¡¨é¢
+		D3DLOCK_DONOTWAIT // å½“æ˜¾å¡é”å®šåŒºåŸŸå¤±è´¥çš„æ—¶å€™ï¼Œä¸é˜»å¡åº”ç”¨ç¨‹åº,è¿”å›D3DERR_WASSTILLDRAWING
 	);
 
 	if (FAILED(res)) {
@@ -214,10 +209,10 @@ void D3dRenderer::DoRender(const webrtc::VideoFrame& frame) {
 		return;
 	}
 
-	// 2.2 ½«RGBÊı¾İ¿½±´µ½ÀëÆÁ±íÃæ
-	// Ëø¶¨ÇøÓòµÄµØÖ·
+	// 2.2 å°†RGBæ•°æ®æ‹·è´åˆ°ç¦»å±è¡¨é¢
+	// é”å®šåŒºåŸŸçš„åœ°å€
 	byte* pdest = (byte*)d3d9_rect.pBits;
-	// Ëø¶¨ÇøÓòÃ¿Ò»ĞĞµÄÊı¾İ´óĞ¡
+	// é”å®šåŒºåŸŸæ¯ä¸€è¡Œçš„æ•°æ®å¤§å°
 	int stride = d3d9_rect.Pitch;
 
 	if (webrtc::VideoFrameBuffer::Type::kI420 == vfb.get()->type()) {
@@ -238,44 +233,44 @@ void D3dRenderer::DoRender(const webrtc::VideoFrame& frame) {
 		}
 	}
 
-	// 2.3 ½â³ıËø¶¨
+	// 2.3 è§£é™¤é”å®š
 	d3d9_surface_->UnlockRect();
 
-	// 3. Çå³ıºóÌ¨»º³å
-	d3d9_device_->Clear(0,          // µÚ¶ş¸ö¾ØĞÎÊı×é²ÎÊıµÄ´óĞ¡
-		NULL,                       // ĞèÒªÇå³ıµÄ¾ØĞÎÊı×é£¬Èç¹ûÊÇNULL£¬±íÊ¾Çå³ıËùÓĞ
-		D3DCLEAR_TARGET,            // Çå³ıäÖÈ¾Ä¿±ê
-		D3DCOLOR_XRGB(30, 30, 30),  // Ê¹ÓÃµÄÑÕÉ«Öµ
+	// 3. æ¸…é™¤åå°ç¼“å†²
+	d3d9_device_->Clear(0,          // ç¬¬äºŒä¸ªçŸ©å½¢æ•°ç»„å‚æ•°çš„å¤§å°
+		NULL,                       // éœ€è¦æ¸…é™¤çš„çŸ©å½¢æ•°ç»„ï¼Œå¦‚æœæ˜¯NULLï¼Œè¡¨ç¤ºæ¸…é™¤æ‰€æœ‰
+		D3DCLEAR_TARGET,            // æ¸…é™¤æ¸²æŸ“ç›®æ ‡
+		D3DCOLOR_XRGB(30, 30, 30),  // ä½¿ç”¨çš„é¢œè‰²å€¼
 		1.0f, 0);
 
-	// 4. ½«ÀëÆÁ±íÃæµÄÊı¾İ¿½±´µ½ºóÌ¨»º³å±íÃæ
+	// 4. å°†ç¦»å±è¡¨é¢çš„æ•°æ®æ‹·è´åˆ°åå°ç¼“å†²è¡¨é¢
 	d3d9_device_->BeginScene();
-	// 4.1 »ñÈ¡ºóÌ¨»º³å±íÃæ
+	// 4.1 è·å–åå°ç¼“å†²è¡¨é¢
 	IDirect3DSurface9* pback_buffer = nullptr;
-	d3d9_device_->GetBackBuffer(0, // ÕıÔÚÊ¹ÓÃµÄ½»»»Á´µÄË÷Òı
-		0,							// ºóÌ¨»º³å±íÃæµÄË÷Òı
-		D3DBACKBUFFER_TYPE_MONO,	// ºóÌ¨»º³å±íÃæÀàĞÍ
+	d3d9_device_->GetBackBuffer(0, // æ­£åœ¨ä½¿ç”¨çš„äº¤æ¢é“¾çš„ç´¢å¼•
+		0,							// åå°ç¼“å†²è¡¨é¢çš„ç´¢å¼•
+		D3DBACKBUFFER_TYPE_MONO,	// åå°ç¼“å†²è¡¨é¢ç±»å‹
 		&pback_buffer);
 
-	// 4.2µ÷ÕûÍ¼ÏñºÍÏÔÊ¾ÇøÓòµÄ¿í¸ß±È
-	// ÏÔÊ¾ÇøÓòµÄ¿í¸ß
+	// 4.2è°ƒæ•´å›¾åƒå’Œæ˜¾ç¤ºåŒºåŸŸçš„å®½é«˜æ¯”
+	// æ˜¾ç¤ºåŒºåŸŸçš„å®½é«˜
 	float w1 = rt_viewport_.right - rt_viewport_.left;
 	float h1 = rt_viewport_.bottom - rt_viewport_.top;
-	// Í¼ÏñµÄ¿í¸ß
+	// å›¾åƒçš„å®½é«˜
 	float w2 = (float)width_;
 	float h2 = (float)height_;
-	// ¼ÆËãÄ¿±êÇøÓòµÄ´óĞ¡
+	// è®¡ç®—ç›®æ ‡åŒºåŸŸçš„å¤§å°
 	int dst_w = 0;
 	int dst_h = 0;
 	int x, y = 0;
 
-	if (w1 > (w2 * h1) / h2) { // Ô­Ê¼µÄÏÔÊ¾ÇøÓò£¬¿í¶È¸ü¿íÒ»Ğ©
+	if (w1 > (w2 * h1) / h2) { // åŸå§‹çš„æ˜¾ç¤ºåŒºåŸŸï¼Œå®½åº¦æ›´å®½ä¸€äº›
 		dst_w = (w2 * h1) / h2;
 		dst_h = h1;
 		x = (w1 - dst_w) / 2;
 		y = 0;
 	}
-	else {   // Ô­Ê¼µÄÏÔÊ¾ÇøÓò£¬¸ß¶È¸ü¸ßÒ»Ğ©
+	else {   // åŸå§‹çš„æ˜¾ç¤ºåŒºåŸŸï¼Œé«˜åº¦æ›´é«˜ä¸€äº›
 		dst_w = w1;
 		dst_h = (h2 * w1) / w2;
 		x = 0;
@@ -284,27 +279,27 @@ void D3dRenderer::DoRender(const webrtc::VideoFrame& frame) {
 
 	RECT dest_rect{ x, y, x + dst_w, y + dst_h };
 
-	// 4.3.¸´ÖÆÀëÆÁ±íÃæµÄÊı¾İµ½ºóÌ¨»º³å±íÃæ
-	d3d9_device_->StretchRect(d3d9_surface_, // Ô´±íÃæ
-		NULL,           // Ô´±íÃæµÄ¾ØĞÎÇøÓò£¬Èç¹ûÊÇNULL£¬±íÊ¾ËùÓĞÇøÓò
-		pback_buffer,   // Ä¿±ê±íÃæ
-		NULL,//&dest_rect,			// Ä¿±ê±íÃæµÄ¾ØĞÎÇøÓò£¬Èç¹ûNULL£¬±íÊ¾ËùÓĞÇøÓò
-		D3DTEXF_LINEAR  // Ëõ·ÅËã·¨£¬ÏßĞÔ²åÖµ
+	// 4.3.å¤åˆ¶ç¦»å±è¡¨é¢çš„æ•°æ®åˆ°åå°ç¼“å†²è¡¨é¢
+	d3d9_device_->StretchRect(d3d9_surface_, // æºè¡¨é¢
+		NULL,           // æºè¡¨é¢çš„çŸ©å½¢åŒºåŸŸï¼Œå¦‚æœæ˜¯NULLï¼Œè¡¨ç¤ºæ‰€æœ‰åŒºåŸŸ
+		pback_buffer,   // ç›®æ ‡è¡¨é¢
+		NULL,//&dest_rect,			// ç›®æ ‡è¡¨é¢çš„çŸ©å½¢åŒºåŸŸï¼Œå¦‚æœNULLï¼Œè¡¨ç¤ºæ‰€æœ‰åŒºåŸŸ
+		D3DTEXF_LINEAR  // ç¼©æ”¾ç®—æ³•ï¼Œçº¿æ€§æ’å€¼
 	);
 	d3d9_device_->EndScene();
 
-	// 5. ÏÔÊ¾Í¼Ïñ£¬±íÃæ·­×ª
-	d3d9_device_->Present(NULL, // ºóÌ¨»º³å±íÃæµÄ¾ØĞÎÇøÓò£¬ NULL±íÊ¾Õû¸öÇøÓò
-		NULL,	// ÏÔÊ¾ÇøÓò£¬ NULL±íÊ¾Õû¸ö¿Í»§ÏÔÊ¾ÇøÓò
-		NULL,   // ÏÔÊ¾´°¿Ú£¬ NULL±íÊ¾Ö÷´°¿Ú
+	// 5. æ˜¾ç¤ºå›¾åƒï¼Œè¡¨é¢ç¿»è½¬
+	d3d9_device_->Present(NULL, // åå°ç¼“å†²è¡¨é¢çš„çŸ©å½¢åŒºåŸŸï¼Œ NULLè¡¨ç¤ºæ•´ä¸ªåŒºåŸŸ
+		NULL,	// æ˜¾ç¤ºåŒºåŸŸï¼Œ NULLè¡¨ç¤ºæ•´ä¸ªå®¢æˆ·æ˜¾ç¤ºåŒºåŸŸ
+		NULL,   // æ˜¾ç¤ºçª—å£ï¼Œ NULLè¡¨ç¤ºä¸»çª—å£
 		NULL);
 
-	// 6. ÊÍ·ÅºóÌ¨»º³å
+	// 6. é‡Šæ”¾åå°ç¼“å†²
 	pback_buffer->Release();
 }
 
 void D3dRenderer::OnFrame(const webrtc::VideoFrame& frame) {
-    // worker_threadÖ´ĞĞäÖÈ¾¹¤×÷
+    // worker_threadæ‰§è¡Œæ¸²æŸ“å·¥ä½œ
     KRTCGlobal::Instance()->worker_thread()->PostTask(webrtc::ToQueuedTask([=] {
         if (!TryInit(frame)) {
             return;

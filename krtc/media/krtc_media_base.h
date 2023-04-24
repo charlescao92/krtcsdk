@@ -10,17 +10,12 @@
 
 namespace krtc {
 
-enum class STREAM_CONTROL_TYPE {
-	PUSH_TYPE,
-	PULL_TYPE,
-};
-
 class KRTCMediaBase {
 public:
-	explicit KRTCMediaBase(const STREAM_CONTROL_TYPE& type, 
+	explicit KRTCMediaBase(const CONTROL_TYPE& type, 
 		const std::string& server_addr, 
 		const std::string& channel = "", 
-		const int& hwnd = 0);  // À­Á÷Ïà¹Ø£¬ÄÚ²¿äÖÈ¾Ôò´«Èë´°¿Ú¾ä±ú£¬Ò²¿ÉÒÔ×Ô¼ºÊµÏÖ»ñÈ¡ÂãÁ÷À´äÖÈ¾ÏÔÊ¾
+		const int& hwnd = 0);  // æ‹‰æµç›¸å…³ï¼Œå†…éƒ¨æ¸²æŸ“åˆ™ä¼ å…¥çª—å£å¥æŸ„ï¼Œä¹Ÿå¯ä»¥è‡ªå·±å®ç°è·å–è£¸æµæ¥æ¸²æŸ“æ˜¾ç¤º
 	virtual ~KRTCMediaBase();
 
 	virtual void Start() = 0;

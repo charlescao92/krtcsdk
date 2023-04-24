@@ -1,8 +1,7 @@
-
-
 #include "krtc/device/vcm_capturer.h"
 
 #include <stdint.h>
+
 #include <memory>
 
 #include <modules/video_capture/video_capture_factory.h>
@@ -52,7 +51,6 @@ void VcmCapturer::Start()
                 break;
             }
 
-            // 判断摄像头采集的能力
             if (device_info_->NumberOfCapabilities(cam_id_.c_str()) <= 0) {
                 err = KRTCError::kVideoNoCapabilitiesErr;
                 RTC_LOG(LS_WARNING) << "CamImpl no capabilities";
@@ -71,7 +69,6 @@ void VcmCapturer::Start()
 
             vcm_->RegisterCaptureDataCallback(this);
 
-            // 启动摄像头采集
             if (vcm_->StartCapture(best_cap) < 0) {
                 err = KRTCError::kVideoStartCaptureErr;
                 RTC_LOG(LS_WARNING) << "CamImpl video StartCapture error";
@@ -84,7 +81,6 @@ void VcmCapturer::Start()
 
         } while (0);
 
-        // 回调启动结果
         if (err != KRTCError::kNoErr) {
             if (KRTCGlobal::Instance()->engine_observer()) {
                 KRTCGlobal::Instance()->engine_observer()->OnVideoSourceFailed(err);
@@ -95,9 +91,7 @@ void VcmCapturer::Start()
                 KRTCGlobal::Instance()->engine_observer()->OnVideoSourceSuccess();
             }
         }
-    
     }));
-
 }
 
 void VcmCapturer::Stop() {
@@ -106,7 +100,6 @@ void VcmCapturer::Stop() {
         has_start_ = false;
     }
 }
-
 
 void VcmCapturer::Destroy() {
     if (!has_start_) {
@@ -118,10 +111,8 @@ void VcmCapturer::Destroy() {
 
     vcm_->StopCapture();
     vcm_->DeRegisterCaptureDataCallback();
-    // Release reference to VCM.
     vcm_ = nullptr;
 }
-
 
 VcmCapturer::~VcmCapturer() {
     Destroy();
@@ -131,4 +122,4 @@ void VcmCapturer::OnFrame(const webrtc::VideoFrame& frame) {
     VideoCapturer::OnFrame(frame);
 }
 
-}  // namespace krtc
+} // namespace krtc

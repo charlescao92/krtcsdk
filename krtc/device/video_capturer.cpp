@@ -1,13 +1,3 @@
-/*
- *  Copyright (c) 2017 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree. An additional intellectual property rights grant can be found
- *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the source tree.
- */
-
 #include "krtc/device/video_capturer.h"
 
 #include <algorithm>
@@ -59,6 +49,7 @@ void VideoCapturer::OnFrame(const webrtc::VideoFrame& original_frame) {
                 out_width, out_height);
             new_frame_builder.set_update_rect(new_rect);
         }
+
         broadcaster_.OnFrame(new_frame_builder.build());
 
     }
@@ -117,4 +108,4 @@ webrtc::VideoFrame VideoCapturer::MaybePreprocess(const webrtc::VideoFrame& fram
         return frame;
     }
 }
-}  // namespace webrtc
+}  // namespace krtc

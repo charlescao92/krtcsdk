@@ -61,11 +61,9 @@ public:
 };
 
 class IAudioHandler : public IMediaHandler {
-
 };
 
 class IVideoHandler : public IMediaHandler {
-
 };
 
 class KRTC_API KRTCEngineObserver {
@@ -82,47 +80,42 @@ public:
     virtual void OnPullFailed(KRTCError) {}
     virtual void OnNetworkInfo(uint64_t rtt_ms, uint64_t packets_lost, double fraction_lost) {}
     virtual void OnVideoCaptureFps(uint32_t fps) {}
-    virtual void OnPureVideoFrame(int width, int height,
-        const uint8_t* dataY, const uint8_t* dataU, const uint8_t* dataV,
-        uint32_t linesizeY, uint32_t linesizeU, uint32_t linesizeV) {}
     virtual void OnEncodedVideoFrame(std::shared_ptr<MediaFrame> video_frame) {}
     virtual void OnPureAudioFrame(std::shared_ptr<MediaFrame> audio_frame) {}
     virtual void OnMixedAudioFrame(std::shared_ptr<MediaFrame> audio_frame) {}
     virtual void OnProcessingFilterAudioFrame(std::shared_ptr<MediaFrame> audio_frame) {}
     virtual void OnEncodedAudioFrame(std::shared_ptr<MediaFrame> audio_frame) {}
+    virtual void OnCapturePureVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) {}
+    virtual void OnPullVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) {}
 };
 
 enum class KRTC_API CONTROL_TYPE {
     PUSH,
     PULL,
-    BOTH
 };
 
 class KRTC_API KRTCEngine {
 public:
-    static void Init(CONTROL_TYPE type, KRTCEngineObserver* observer);
-
+    static void Init(KRTCEngineObserver* observer);
     static const char* GetErrString(const KRTCError& err);
 
-    // 视频设备
     static uint32_t GetCameraCount();
     static int32_t GetCameraInfo(int index, char *device_name, uint32_t device_name_length,
         char* device_id, uint32_t device_id_length);
     static IVideoHandler* CreateCameraSource(const char* cam_id);
 
-    // 桌面屏幕共享，可能会有多个屏幕，主屏和副屏
     static uint32_t GetScreenCount();
     static IVideoHandler* CreateScreenSource(const uint32_t& screen_index = 0);
    
-    // 音频设备
     static int16_t GetMicCount();
     static int32_t GetMicInfo(int index, char* mic_name, uint32_t mic_name_length,
         char* mic_guid, uint32_t mic_guid_length);
     static IAudioHandler* CreateMicSource(const char* mic_id);
 
-    static IMediaHandler* CreatePreview(int hwnd);
+    static IMediaHandler* CreatePreview(const unsigned int& hwnd = 0);
     static IMediaHandler* CreatePusher(const char* server_addr, const char* push_channel = "livestream");
-    static IMediaHandler* CreatePuller(const char* server_addr, const char* pull_channel = "livestream", int hwnd = 0);
+    static IMediaHandler* CreatePuller(const char* server_addr, const char* pull_channel = "livestream",
+                                       const unsigned int& hwnd = 0);
 };
 
 } // namespace krtc

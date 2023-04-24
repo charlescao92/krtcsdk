@@ -15,9 +15,7 @@ MicImpl::MicImpl(const char* mic_id) :
 {
 }
 
-MicImpl::~MicImpl() {
-
-}
+MicImpl::~MicImpl() {}
 
 void MicImpl::Start() {
     RTC_LOG(LS_INFO) << "MicImpl Start call";
@@ -118,7 +116,6 @@ void MicImpl::Stop() {
 
         has_start_ = false;
 
-        // 停止录音
         webrtc::AudioDeviceModule* audio_device = KRTCGlobal::Instance()->audio_device(); 
         if (audio_device->RecordingIsInitialized()) {
             audio_device->StopRecording();
@@ -169,5 +166,4 @@ int32_t MicImpl::RecordedDataIsAvailable(const void* audioSamples,
     
     return 0;
 }
-
 } // namespace krtc

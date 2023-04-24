@@ -19,11 +19,11 @@ namespace krtc {
 	class HttpManager;
 
 	enum class CAPTURE_TYPE {
-		CAMERA,	// ÉãÏñÍ·²É¼¯
-		SCREEN  // ×ÀÃæ²É¼¯
+		CAMERA,	// æ‘„åƒå¤´é‡‡é›†
+		SCREEN  // æ¡Œé¢é‡‡é›†
 	};
 
-	// È«¾Ö¹ÜÀíÀà£¬µ¥ÀıÄ£Ê½
+	// å…¨å±€ç®¡ç†ç±»ï¼Œå•ä¾‹æ¨¡å¼
 	class KRTCGlobal {
 	public:
 		static KRTCGlobal* Instance();
@@ -33,8 +33,6 @@ namespace krtc {
 		~KRTCGlobal();
 
 	public:
-		void InitPush() {}
-
 		rtc::Thread* api_thread() { return signaling_thread_.get(); }
 		rtc::Thread* worker_thread() { return worker_thread_.get(); }
 		rtc::Thread* network_thread() { return network_thread_.get(); }
@@ -43,20 +41,22 @@ namespace krtc {
 			return video_device_info_.get();
 		}
 
-		size_t GetScreenCount() const { return screen_source_list_.size(); };
+		size_t GetScreenCount() const { return screen_source_list_.size(); }
 
 		KRTCEngineObserver* engine_observer() { return engine_observer_; }
 		void RegisterEngineObserver(KRTCEngineObserver* observer) {
 			engine_observer_ = observer;
 		}
-		
+
+		HttpManager* http_manager() { return http_manager_; }
+	
 		webrtc::AudioDeviceModule* audio_device() { return audio_device_.get(); }
 
 		webrtc::PeerConnectionFactoryInterface* push_peer_connection_factory();
 
-		webrtc::TaskQueueFactory* task_queue_factory() {
-			return task_queue_factory_.get();
-		}
+		webrtc::TaskQueueFactory* task_queue_factory() { return task_queue_factory_.get(); }
+
+		webrtc::VideoTrackSource* current_video_source();
 
 		void SetCurrentCaptureType(const CAPTURE_TYPE& type) {
 			current_capture_type_ = type;
@@ -70,12 +70,9 @@ namespace krtc {
 		void StartVcmCapturerSource();
 		void StopVcmCapturerSource();
 
-
 		void CreateDesktopCapturerSource(uint16_t screen_index, uint16_t target_fps);
 		void StartDesktopCapturerSource();
 		void StopDesktopCapturerSource();
-
-		webrtc::VideoTrackSource* current_video_source();
 
 	private:
 		std::unique_ptr<rtc::Thread> signaling_thread_;
@@ -85,17 +82,12 @@ namespace krtc {
 		std::unique_ptr<webrtc::TaskQueueFactory> task_queue_factory_;
 		rtc::scoped_refptr<webrtc::AudioDeviceModule> audio_device_;
 		KRTCEngineObserver* engine_observer_ = nullptr;
-
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track_;
-
-		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
-			push_peer_connection_factory_;
-
+		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> push_peer_connection_factory_;
 		rtc::scoped_refptr<VcmCapturerTrackSource> camera_capturer_source_;
 		rtc::scoped_refptr<DesktopCapturerTrackSource> desktop_capturer_source_;
-
 		webrtc::DesktopCapturer::SourceList screen_source_list_;
 		CAPTURE_TYPE current_capture_type_ = CAPTURE_TYPE::CAMERA;
+		HttpManager* http_manager_ = nullptr;
 	};
 
 } // namespace krtc

@@ -19,16 +19,15 @@ KRTCPusher::KRTCPusher(const std::string& server_addr, const std::string& push_c
 KRTCPusher::~KRTCPusher() = default;
 
 void KRTCPusher::Start() {
-    RTC_LOG(LS_INFO) << "KRTCPusher StartPush call";
+    RTC_LOG(LS_INFO) << "KRTCPusher Start";
 
     if (push_impl_) {
         push_impl_->Start();
     }
-
 }
 
 void KRTCPusher::Stop() {
-    RTC_LOG(LS_INFO) << "KRTCPusher StopPush call";
+    RTC_LOG(LS_INFO) << "KRTCPusher Stop";
 
     if (push_impl_) {
         push_impl_->Stop();
@@ -37,10 +36,9 @@ void KRTCPusher::Stop() {
 }
 
 void KRTCPusher::Destroy() {
-    RTC_LOG(LS_INFO) << "KRTCPusher Destroy call";
+    RTC_LOG(LS_INFO) << "KRTCPusher Destroy";
 
     delete this;
-
 }
 
 } // namespace krtc

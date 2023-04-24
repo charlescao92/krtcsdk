@@ -110,7 +110,7 @@ namespace krtc {
         }));
 
         KRTCError err = KRTCError::kNoErr;
-        // 回调启动结果
+        // 鍥炶皟鍚姩缁撴灉
         if (err != KRTCError::kNoErr) {
             if (KRTCGlobal::Instance()->engine_observer()) {
                 KRTCGlobal::Instance()->engine_observer()->OnVideoSourceFailed(err);
