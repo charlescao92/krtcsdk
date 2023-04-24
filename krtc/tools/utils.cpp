@@ -1,5 +1,9 @@
 #include "krtc/tools/utils.h"
 
+#if __linux__
+#include <assert.h>
+#endif
+
 #define CHECK_TOOLS_INIT \
   if (!isInit) {         \
     Init();              \
@@ -31,7 +35,7 @@ std::string Tools::RandString(uint32_t len) {
     }
     else {
         std::string str;
-        for (UInt32 i = 0; i < len - uuid.size(); i++) {
+        for (uint32_t i = 0; i < len - uuid.size(); i++) {
             uuid += rand() % 26 + 'a';
         }
     }
