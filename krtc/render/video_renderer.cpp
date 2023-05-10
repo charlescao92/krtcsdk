@@ -55,7 +55,7 @@ private:
 
 std::unique_ptr<VideoRenderer> VideoRenderer::Create(CONTROL_TYPE type, int hwnd, size_t width, size_t height)
 {
-#if _WIN32
+#if defined(_WIN32) || defined(_WIN64)
     if (0 != hwnd) {
         std::unique_ptr<VideoRenderer> renderer = CreatePlatformRenderer(hwnd, width, height);
         if (renderer != nullptr)

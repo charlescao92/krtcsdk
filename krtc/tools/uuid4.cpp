@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #include <wincrypt.h>
 #endif
@@ -34,7 +34,7 @@ int uuid4_init(void) {
     return UUID4_EFAILURE;
   }
 
-#elif defined(_WIN32)
+#elif defined(_WIN32) || defined(_WIN64)
   int res;
   HCRYPTPROV hCryptProv;
   res = CryptAcquireContext(
@@ -53,7 +53,6 @@ int uuid4_init(void) {
 #endif
   return UUID4_ESUCCESS;
 }
-
 
 void uuid4_generate(char *dst) {
   static const char *template1 = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";

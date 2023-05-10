@@ -10,6 +10,10 @@
 #include "krtc/base/krtc_global.h"
 #include "krtc/base/krtc_http.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include "krtc/codec/external_video_encoder_factory.h"
+#endif
+
 namespace krtc {
 
 KRTCGlobal* KRTCGlobal::Instance() {
@@ -50,6 +54,25 @@ KRTCGlobal::~KRTCGlobal() {}
 
 webrtc::PeerConnectionFactoryInterface* KRTCGlobal::push_peer_connection_factory()
 {
+#if defined(_WIN32) || defined(_WIN64)
+    push_peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
+        network_thread_.get(), /* network_thread */
+        worker_thread_.get(), /* worker_thread */
+        signaling_thread_.get(),  /* signaling_thread */
+        audio_device_,  /* default_adm */
+        webrtc::CreateBuiltinAudioEncoderFactory(),
+        webrtc::CreateBuiltinAudioDecoderFactory(),
+#if USE_EXTERNAL_ENCOER
+        krtc::CreateBuiltinExternalVideoEncoderFactory(),
+#else
+        webrtc::CreateBuiltinVideoEncoderFactory(),
+#endif
+        webrtc::CreateBuiltinVideoDecoderFactory(),
+        nullptr, /* audio_mixer */
+        nullptr, /* audio_processing */
+        nullptr, /*audio_frame_processor*/
+        std::move(task_queue_factory_));
+#else
     push_peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
         network_thread_.get(), /* network_thread */
         worker_thread_.get(), /* worker_thread */
@@ -63,6 +86,7 @@ webrtc::PeerConnectionFactoryInterface* KRTCGlobal::push_peer_connection_factory
         nullptr, /* audio_processing */
         nullptr, /*audio_frame_processor*/
         std::move(task_queue_factory_));
+#endif
 
     return push_peer_connection_factory_.get();
 }

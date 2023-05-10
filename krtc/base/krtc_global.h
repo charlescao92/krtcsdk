@@ -18,7 +18,7 @@ namespace krtc {
 	class KRTCEngineObserver;
 	class HttpManager;
 
-	enum class CAPTURE_TYPE {
+    enum class CAPTURE_TYPE {
 		CAMERA,	// 摄像头采集
 		SCREEN  // 桌面采集
 	};
@@ -40,6 +40,9 @@ namespace krtc {
 		webrtc::VideoCaptureModule::DeviceInfo* video_device_info() {
 			return video_device_info_.get();
 		}
+
+		void SetPreview(bool preview) { is_preview_ = preview; }
+		bool is_preview() const { return is_preview_;  }
 
 		size_t GetScreenCount() const { return screen_source_list_.size(); }
 
@@ -88,6 +91,7 @@ namespace krtc {
 		webrtc::DesktopCapturer::SourceList screen_source_list_;
 		CAPTURE_TYPE current_capture_type_ = CAPTURE_TYPE::CAMERA;
 		HttpManager* http_manager_ = nullptr;
+		bool is_preview_ = false;
 	};
 
 } // namespace krtc

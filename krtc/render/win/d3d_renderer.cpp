@@ -184,15 +184,7 @@ void D3dRenderer::DoRender(const webrtc::VideoFrame& frame) {
 			rgb_buffer_size_ = size;
 		}
 
-		ConvertFromI420(frame, webrtc::VideoType::kARGB, 0,
-			(uint8_t*)rgb_buffer_);
-
-		// YUV格式转换成RGB
-		/*libyuv::I420ToARGB((const uint8_t*)frame->data[0], frame->stride[0],
-			(const uint8_t*)frame->data[1], frame->stride[1],
-			(const uint8_t*)frame->data[2], frame->stride[2],
-			(uint8_t*)rgb_buffer_, width_ * 4,
-			width_, height_);*/
+		ConvertFromI420(frame, webrtc::VideoType::kARGB, 0, (uint8_t*)rgb_buffer_);
 	}
 
 	// 2. 将RGB数据拷贝到离屏表面

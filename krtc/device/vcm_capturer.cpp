@@ -10,17 +10,18 @@
 #include <rtc_base/task_utils/to_queued_task.h>
 
 #include "krtc/base/krtc_global.h"
+#include "krtc/media/media_frame.h"
 
 namespace krtc {
 
-std::unique_ptr<VcmCapturer> VcmCapturer::Create(const std::string& cam_id, size_t target_fps, 
-    size_t width, size_t height)
+std::unique_ptr<VcmCapturer> VcmCapturer::Create(const std::string& cam_id,  size_t width, size_t height,
+                                                size_t target_fps)
 {
     std::unique_ptr<VcmCapturer> vcm_capturer(new VcmCapturer(cam_id, width, height, target_fps));
     return std::move(vcm_capturer);
 }
 
-VcmCapturer::VcmCapturer(const std::string& cam_id, size_t target_fps, size_t width, size_t height) :
+VcmCapturer::VcmCapturer(const std::string& cam_id, size_t width, size_t height, size_t target_fps) :
     cam_id_(cam_id),
     vcm_(nullptr),
     signaling_thread_(rtc::Thread::Current()),

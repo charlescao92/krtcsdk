@@ -71,12 +71,12 @@ void YUVOpenGLWidget::initializeGL()
     initializeOpenGLFunctions();
     glEnable(GL_DEPTH_TEST);
 
-    // openglæ¸²æŸ“ç®¡çº¿ä¾èµ–ç€è‰²å™¨æ¥å¤„ç†ä¼ å…¥çš„æ•°æ®
-    // ç€è‰²å™¨ï¼šå°±æ˜¯ä½¿ç”¨openGLç€è‰²è¯­è¨€(OpenGL Shading Language,GLSL)ç¼–å†™çš„ä¸€ä¸ªå°å‡½æ•°,GLSLæ˜¯æž„æˆæ‰€æœ‰OpenGLç€è‰²å™¨çš„è¯­è¨€
-    // åˆå§‹åŒ–é¡¶ç‚¹ç€è‰²å™¨ã€å¯¹è±¡
+    // opengläÖÈ¾¹ÜÏßÒÀÀµ×ÅÉ«Æ÷À´´¦Àí´«ÈëµÄÊý¾Ý
+    // ×ÅÉ«Æ÷£º¾ÍÊÇÊ¹ÓÃopenGL×ÅÉ«ÓïÑÔ(OpenGL Shading Language,GLSL)±àÐ´µÄÒ»¸öÐ¡º¯Êý,GLSLÊÇ¹¹³ÉËùÓÐOpenGL×ÅÉ«Æ÷µÄÓïÑÔ
+    // ³õÊ¼»¯¶¥µã×ÅÉ«Æ÷¡¢¶ÔÏó
     m_pVSHader = new QOpenGLShader(QOpenGLShader::Vertex, this);
 
-    // é¡¶ç‚¹ç€è‰²å™¨æºç 
+    // ¶¥µã×ÅÉ«Æ÷Ô´Âë
     const char* vsrc = "attribute vec4 vertexIn; \
     attribute vec2 textureIn; \
     varying vec2 textureOut;  \
@@ -86,13 +86,13 @@ void YUVOpenGLWidget::initializeGL()
         textureOut = textureIn; \
     }";
 
-    // ç¼–è¯‘é¡¶ç‚¹ç€è‰²å™¨ç¨‹åº
+    // ±àÒë¶¥µã×ÅÉ«Æ÷³ÌÐò
     m_pVSHader->compileSourceCode(vsrc);
 
-    // åˆå§‹åŒ–ç‰‡æ®µç€è‰²å™¨åŠŸèƒ½gpuä¸­yuvè½¬æ¢æˆrgb
+    // ³õÊ¼»¯Æ¬¶Î×ÅÉ«Æ÷¹¦ÄÜgpuÖÐyuv×ª»»³Érgb
     m_pFSHader = new QOpenGLShader(QOpenGLShader::Fragment, this);
 
-    // ç‰‡æ®µç€è‰²å™¨æºç 
+    // Æ¬¶Î×ÅÉ«Æ÷Ô´Âë
     const char* fsrc = "varying vec2 textureOut; \
     uniform sampler2D tex_y; \
     uniform sampler2D tex_u; \
@@ -110,31 +110,31 @@ void YUVOpenGLWidget::initializeGL()
         gl_FragColor = vec4(rgb, 1); \
     }";
 
-    // å°†glslæºç é€å…¥ç¼–è¯‘å™¨ç¼–è¯‘ç€è‰²å™¨ç¨‹åº
+    // ½«glslÔ´ÂëËÍÈë±àÒëÆ÷±àÒë×ÅÉ«Æ÷³ÌÐò
     m_pFSHader->compileSourceCode(fsrc);
 
-    // åˆ›å»ºç€è‰²å™¨ç¨‹åºå®¹å™¨
+    // ´´½¨×ÅÉ«Æ÷³ÌÐòÈÝÆ÷
     m_pShaderProgram = new QOpenGLShaderProgram;
-    // å°†ç‰‡æ®µç€è‰²å™¨æ·»åŠ åˆ°ç¨‹åºå®¹å™¨
+    // ½«Æ¬¶Î×ÅÉ«Æ÷Ìí¼Óµ½³ÌÐòÈÝÆ÷
     m_pShaderProgram->addShader(m_pFSHader);
-    // å°†é¡¶ç‚¹ç€è‰²å™¨æ·»åŠ åˆ°ç¨‹åºå®¹å™¨
+    // ½«¶¥µã×ÅÉ«Æ÷Ìí¼Óµ½³ÌÐòÈÝÆ÷
     m_pShaderProgram->addShader(m_pVSHader);
-    // ç»‘å®šå±žæ€§vertexInåˆ°æŒ‡å®šä½ç½®ATTRIB_VERTEX,è¯¥å±žæ€§åœ¨é¡¶ç‚¹ç€è‰²æºç å…¶ä¸­æœ‰å£°æ˜Ž
+    // °ó¶¨ÊôÐÔvertexInµ½Ö¸¶¨Î»ÖÃATTRIB_VERTEX,¸ÃÊôÐÔÔÚ¶¥µã×ÅÉ«Ô´ÂëÆäÖÐÓÐÉùÃ÷
     m_pShaderProgram->bindAttributeLocation("vertexIn", ATTRIB_VERTEX);
-    // ç»‘å®šå±žæ€§textureInåˆ°æŒ‡å®šä½ç½®ATTRIB_TEXTURE,è¯¥å±žæ€§åœ¨é¡¶ç‚¹ç€è‰²æºç å…¶ä¸­æœ‰å£°æ˜Ž
+    // °ó¶¨ÊôÐÔtextureInµ½Ö¸¶¨Î»ÖÃATTRIB_TEXTURE,¸ÃÊôÐÔÔÚ¶¥µã×ÅÉ«Ô´ÂëÆäÖÐÓÐÉùÃ÷
     m_pShaderProgram->bindAttributeLocation("textureIn", ATTRIB_TEXTURE);
-    // é“¾æŽ¥æ‰€æœ‰æ‰€æœ‰æ·»å…¥åˆ°çš„ç€è‰²å™¨ç¨‹åº
+    // Á´½ÓËùÓÐËùÓÐÌíÈëµ½µÄ×ÅÉ«Æ÷³ÌÐò
     m_pShaderProgram->link();
-    // æ¿€æ´»æ‰€æœ‰é“¾æŽ¥
+    // ¼¤»îËùÓÐÁ´½Ó
     m_pShaderProgram->bind();
 
-    // è¯»å–ç€è‰²å™¨ä¸­çš„æ•°æ®å˜é‡tex_y, tex_u, tex_vçš„ä½ç½®,è¿™äº›å˜é‡çš„å£°æ˜Žå¯ä»¥åœ¨
-    // ç‰‡æ®µç€è‰²å™¨æºç ä¸­å¯ä»¥çœ‹åˆ°
+    // ¶ÁÈ¡×ÅÉ«Æ÷ÖÐµÄÊý¾Ý±äÁ¿tex_y, tex_u, tex_vµÄÎ»ÖÃ,ÕâÐ©±äÁ¿µÄÉùÃ÷¿ÉÒÔÔÚ
+    // Æ¬¶Î×ÅÉ«Æ÷Ô´ÂëÖÐ¿ÉÒÔ¿´µ½
     textureUniformY = m_pShaderProgram->uniformLocation("tex_y");
     textureUniformU = m_pShaderProgram->uniformLocation("tex_u");
     textureUniformV = m_pShaderProgram->uniformLocation("tex_v");
 
-    // é¡¶ç‚¹çŸ©é˜µ
+    // ¶¥µã¾ØÕó
     static const GLfloat vertexVertices[] = {
         -1.0f, -1.0f,
          1.0f, -1.0f,
@@ -142,7 +142,7 @@ void YUVOpenGLWidget::initializeGL()
          1.0f, 1.0f,
     };
 
-    // çº¹ç†çŸ©é˜µ
+    // ÎÆÀí¾ØÕó
     static const GLfloat textureVertices[] = {
         0.0f,  1.0f,
         1.0f,  1.0f,
@@ -150,16 +150,16 @@ void YUVOpenGLWidget::initializeGL()
         1.0f,  0.0f,
     };
 
-    // è®¾ç½®å±žæ€§ATTRIB_VERTEXçš„é¡¶ç‚¹çŸ©é˜µå€¼ä»¥åŠæ ¼å¼
+    // ÉèÖÃÊôÐÔATTRIB_VERTEXµÄ¶¥µã¾ØÕóÖµÒÔ¼°¸ñÊ½
     glVertexAttribPointer(ATTRIB_VERTEX, 2, GL_FLOAT, 0, 0, vertexVertices);
-    // è®¾ç½®å±žæ€§ATTRIB_TEXTUREçš„çº¹ç†çŸ©é˜µå€¼ä»¥åŠæ ¼å¼
+    // ÉèÖÃÊôÐÔATTRIB_TEXTUREµÄÎÆÀí¾ØÕóÖµÒÔ¼°¸ñÊ½
     glVertexAttribPointer(ATTRIB_TEXTURE, 2, GL_FLOAT, 0, 0, textureVertices);
-    // å¯ç”¨ATTRIB_VERTEXå±žæ€§çš„æ•°æ®,é»˜è®¤æ˜¯å…³é—­çš„
+    // ÆôÓÃATTRIB_VERTEXÊôÐÔµÄÊý¾Ý,Ä¬ÈÏÊÇ¹Ø±ÕµÄ
     glEnableVertexAttribArray(ATTRIB_VERTEX);
-    // å¯ç”¨ATTRIB_TEXTUREå±žæ€§çš„æ•°æ®,é»˜è®¤æ˜¯å…³é—­çš„
+    // ÆôÓÃATTRIB_TEXTUREÊôÐÔµÄÊý¾Ý,Ä¬ÈÏÊÇ¹Ø±ÕµÄ
     glEnableVertexAttribArray(ATTRIB_TEXTURE);
 
-    // åˆ†åˆ«åˆ›å»ºy,u,vçº¹ç†å¯¹è±¡
+    // ·Ö±ð´´½¨y,u,vÎÆÀí¶ÔÏó
     m_pTextureY = new QOpenGLTexture(QOpenGLTexture::Target2D);
     m_pTextureU = new QOpenGLTexture(QOpenGLTexture::Target2D);
     m_pTextureV = new QOpenGLTexture(QOpenGLTexture::Target2D);
@@ -167,22 +167,22 @@ void YUVOpenGLWidget::initializeGL()
     m_pTextureU->create();
     m_pTextureV->create();
 
-    // èŽ·å–è¿”å›žyåˆ†é‡çš„çº¹ç†ç´¢å¼•å€¼
+    // »ñÈ¡·µ»Øy·ÖÁ¿µÄÎÆÀíË÷ÒýÖµ
     id_y = m_pTextureY->textureId();
-    // èŽ·å–è¿”å›žuåˆ†é‡çš„çº¹ç†ç´¢å¼•å€¼
+    // »ñÈ¡·µ»Øu·ÖÁ¿µÄÎÆÀíË÷ÒýÖµ
     id_u = m_pTextureU->textureId();
-    // èŽ·å–è¿”å›žvåˆ†é‡çš„çº¹ç†ç´¢å¼•å€¼
+    // »ñÈ¡·µ»Øv·ÖÁ¿µÄÎÆÀíË÷ÒýÖµ
     id_v = m_pTextureV->textureId();
 
-    // è®¾ç½®èƒŒæ™¯è‰²
-    glClearColor(0.3, 0.3, 0.3, 0.0); 
+    // ÉèÖÃ±³¾°É«
+    glClearColor(0.3, 0.3, 0.3, 0.0);
 
 }
 void YUVOpenGLWidget::resizeGL(int w, int h)
 {
-    if (h == 0) // é˜²æ­¢è¢«é›¶é™¤
+    if (h == 0) // ·ÀÖ¹±»Áã³ý
     {
-        h = 1;  // å°†é«˜è®¾ä¸º1
+        h = 1;  // ½«¸ßÉèÎª1
     }
 
     if (w == 0) {
@@ -201,21 +201,21 @@ void YUVOpenGLWidget::paintGL()
     int width = m_videoFrame->fmt.sub_fmt.video_fmt.width;
     int height = m_videoFrame->fmt.sub_fmt.video_fmt.height;
 
-    // åŠ è½½yæ•°æ®çº¹ç†
-    // æ¿€æ´»çº¹ç†å•å…ƒGL_TEXTURE0
+    // ¼ÓÔØyÊý¾ÝÎÆÀí
+    // ¼¤»îÎÆÀíµ¥ÔªGL_TEXTURE0
     glActiveTexture(GL_TEXTURE0);
-    // ä½¿ç”¨æ¥è‡ªyæ•°æ®ç”Ÿæˆçº¹ç†
+    // Ê¹ÓÃÀ´×ÔyÊý¾ÝÉú³ÉÎÆÀí
     glBindTexture(GL_TEXTURE_2D, id_y);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, 
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED,
         GL_UNSIGNED_BYTE, m_videoFrame->data[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-    // åŠ è½½uæ•°æ®çº¹ç†
-    // æ¿€æ´»çº¹ç†å•å…ƒGL_TEXTURE1
-    glActiveTexture(GL_TEXTURE1); 
+
+    // ¼ÓÔØuÊý¾ÝÎÆÀí
+    // ¼¤»îÎÆÀíµ¥ÔªGL_TEXTURE1
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, id_u);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width / 2, height / 2, 0, GL_RED,
         GL_UNSIGNED_BYTE, m_videoFrame->data[1]);
@@ -223,10 +223,10 @@ void YUVOpenGLWidget::paintGL()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-   
-    // åŠ è½½væ•°æ®çº¹ç†
-    // æ¿€æ´»çº¹ç†å•å…ƒGL_TEXTURE2
-    glActiveTexture(GL_TEXTURE2); 
+
+    // ¼ÓÔØvÊý¾ÝÎÆÀí
+    // ¼¤»îÎÆÀíµ¥ÔªGL_TEXTURE2
+    glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, id_v);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width / 2, height / 2, 0, GL_RED,
         GL_UNSIGNED_BYTE, m_videoFrame->data[2]);
@@ -235,14 +235,14 @@ void YUVOpenGLWidget::paintGL()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    // æŒ‡å®šyçº¹ç†è¦ä½¿ç”¨æ–°å€¼ åªèƒ½ç”¨0,1,2ç­‰è¡¨ç¤ºçº¹ç†å•å…ƒçš„ç´¢å¼•ï¼Œè¿™æ˜¯openglä¸äººæ€§åŒ–çš„åœ°æ–¹
-    // 0å¯¹åº”çº¹ç†å•å…ƒGL_TEXTURE0 1å¯¹åº”çº¹ç†å•å…ƒGL_TEXTURE1 2å¯¹åº”çº¹ç†çš„å•å…ƒ
+    // Ö¸¶¨yÎÆÀíÒªÊ¹ÓÃÐÂÖµ Ö»ÄÜÓÃ0,1,2µÈ±íÊ¾ÎÆÀíµ¥ÔªµÄË÷Òý£¬ÕâÊÇopengl²»ÈËÐÔ»¯µÄµØ·½
+    // 0¶ÔÓ¦ÎÆÀíµ¥ÔªGL_TEXTURE0 1¶ÔÓ¦ÎÆÀíµ¥ÔªGL_TEXTURE1 2¶ÔÓ¦ÎÆÀíµÄµ¥Ôª
     glUniform1i(textureUniformY, 0);
-    // æŒ‡å®šuçº¹ç†è¦ä½¿ç”¨æ–°å€¼
+    // Ö¸¶¨uÎÆÀíÒªÊ¹ÓÃÐÂÖµ
     glUniform1i(textureUniformU, 1);
-    // æŒ‡å®švçº¹ç†è¦ä½¿ç”¨æ–°å€¼
+    // Ö¸¶¨vÎÆÀíÒªÊ¹ÓÃÐÂÖµ
     glUniform1i(textureUniformV, 2);
-    // ä½¿ç”¨é¡¶ç‚¹æ•°ç»„æ–¹å¼ç»˜åˆ¶å›¾å½¢
+    // Ê¹ÓÃ¶¥µãÊý×é·½Ê½»æÖÆÍ¼ÐÎ
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 }

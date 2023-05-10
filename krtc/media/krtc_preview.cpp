@@ -49,6 +49,8 @@ void KRTCPreview::Start() {
             if (video_source) {
                 video_source->AddOrUpdateSink(this, rtc::VideoSinkWants());
             }
+
+            KRTCGlobal::Instance()->SetPreview(true);
         }
       
         if (KRTCGlobal::Instance()->engine_observer()) {
@@ -67,6 +69,8 @@ void KRTCPreview::Stop() {
     KRTCGlobal::Instance()->worker_thread()->PostTask(webrtc::ToQueuedTask([=]() {
         RTC_LOG(LS_INFO) << "KRTCPreview Stop PostTask";
 
+        KRTCGlobal::Instance()->SetPreview(false);
+
         webrtc::VideoTrackSource* video_source = KRTCGlobal::Instance()->current_video_source();
         if (!video_source) {
             return;
@@ -82,24 +86,17 @@ void KRTCPreview::Stop() {
     }));
 }
 
-void KRTCPreview::Destroy()
-{
-}
+void KRTCPreview::Destroy() {}
 
-void KRTCPreview::OnFrame(const webrtc::VideoFrame& video_frame)
-{
-    if (hwnd_ != 0) {
-        return;
-    }
-
+void KRTCPreview::OnFrame(const webrtc::VideoFrame& frame){
     if (KRTCGlobal::Instance()->engine_observer()) {
-        rtc::scoped_refptr<webrtc::VideoFrameBuffer> vfb = video_frame.video_frame_buffer();
-        int src_width = video_frame.width();
-        int src_height = video_frame.height();
+        rtc::scoped_refptr<webrtc::VideoFrameBuffer> vfb = frame.video_frame_buffer();
+        int src_width = frame.width();
+        int src_height = frame.height();
 
-        int strideY = vfb.get()->GetI420()->StrideY();
-        int strideU = vfb.get()->GetI420()->StrideU();
-        int strideV = vfb.get()->GetI420()->StrideV();
+        int strideY = vfb->GetI420()->StrideY();
+        int strideU = vfb->GetI420()->StrideU();
+        int strideV = vfb->GetI420()->StrideV();
 
         int size = strideY * src_height + (strideU + strideV) * ((src_height + 1) / 2);
         std::shared_ptr<MediaFrame> media_frame = std::make_shared<MediaFrame>(size);
@@ -115,14 +112,18 @@ void KRTCPreview::OnFrame(const webrtc::VideoFrame& video_frame)
         media_frame->data_len[2] = strideV * ((src_height + 1) / 2);
 
         // 拿到每个平面数组的指针，然后拷贝数据到平面数组里面
-        media_frame->data[1] = media_frame->data[0] + media_frame->data_len[0];
-        media_frame->data[2] = media_frame->data[1] + media_frame->data_len[1];
-        memcpy(media_frame->data[0], video_frame.video_frame_buffer()->GetI420()->DataY(), media_frame->data_len[0]);
-        memcpy(media_frame->data[1], video_frame.video_frame_buffer()->GetI420()->DataU(), media_frame->data_len[1]);
-        memcpy(media_frame->data[2], video_frame.video_frame_buffer()->GetI420()->DataV(), media_frame->data_len[2]);
+        media_frame->data[0] = new char[media_frame->data_len[0]];
+        media_frame->data[1] = new char[media_frame->data_len[1]];
+        media_frame->data[2] = new char[media_frame->data_len[2]];
+        memcpy(media_frame->data[0], vfb->GetI420()->DataY(), media_frame->data_len[0]);
+        memcpy(media_frame->data[1], vfb->GetI420()->DataU(), media_frame->data_len[1]);
+        memcpy(media_frame->data[2], vfb->GetI420()->DataV(), media_frame->data_len[2]);
 
         KRTCGlobal::Instance()->engine_observer()->OnCapturePureVideoFrame(media_frame);
+        delete[] media_frame->data[1];
+        delete[] media_frame->data[2];
     }
+
 }
 
 } // namespace krtc

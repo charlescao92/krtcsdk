@@ -14,11 +14,23 @@ file(GLOB all_src
 	./tools/*.cpp
 	./render/*.cpp
 	./render/win/*.cpp
+    ./codec/*.cpp
+    ./codec/encoder/*.cpp
+    ./codec/nvcodec/NvEncoder/NvEncoder.cpp
+    ./codec/nvcodec/NvEncoder/NvEncoderD3D11.cpp
+    ./codec/qsvcodec/*.cpp
+    ./codec/qsvcodec/src/*.cpp
 )
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     file(GLOB exclude_src
-        "./render/win/*.cpp"
+        ./render/win/*.cpp
+        ./codec/*.cpp
+        ./codec/encoder/*.cpp
+        ./codec/nvcodec/NvEncoder/NvEncoder.cpp
+        ./codec/nvcodec/NvEncoder/NvEncoderD3D11.cpp
+        ./codec/qsvcodec/*.cpp
+        ./codec/qsvcodec/src/*.cpp
     )
     list(REMOVE_ITEM all_src ${exclude_src})
 endif()
@@ -31,6 +43,12 @@ include_directories(
     ${WEBRTC_INCLUDE_DIR}/third_party/libyuv/include
     ${WEBRTC_INCLUDE_DIR}/third_party/libyuv/include/libyuv
     ${WEBRTC_INCLUDE_DIR}/third_party/jsoncpp/source/include
+    ${KRTC_DIR}/krtc
+	${KRTC_DIR}/krtc/codec
+	${KRTC_DIR}/krtc/codec/encoder
+    ${KRTC_DIR}/krtc/codec/nvcodec
+	${KRTC_DIR}/krtc/codec/qsvcodec
+	${KRTC_DIR}/krtc/codec/qsvcodec/include
 )
 
 link_directories(
@@ -42,15 +60,22 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     add_definitions(-DKRTC_API_EXPORT
         -DCURL_STATICLIB
         -DNOMINMAX
+        -D_CRT_SECURE_NO_WARNINGS
+        -DWEBRTC_WIN
+        -DUNICODE
+        -D_UNICODE
+        -DWIN32_LEAN_AND_MEAN
+        -DUSE_EXTERNAL_ENCOER
     )
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
     add_definitions(-DKRTC_API_EXPORT
         -DWEBRTC_POSIX
-        -DWEBRTC_LINUX)
+        -DWEBRTC_LINUX
+        -DUSE_GLIB=1)
 endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
-    add_library(krtc SHARED ${all_src})
+    add_library(krtc SHARED ${all_src} "codec/common_encoder.h")
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
     add_library(krtc_static STATIC ${all_src})
     set_target_properties(krtc_static PROPERTIES  OUTPUT_NAME "krtc")
@@ -65,21 +90,23 @@ endif()
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     target_link_libraries(krtc
         winmm
-	ws2_32
-	Strmiids
-	wldap32
-	Crypt32
-	iphlpapi
-	msdmo
-	dmoguids
-	wmcodecdspuuid
-	jsoncpp
-	Secur32
-	d3d11
-	dxgi
+	    ws2_32
+	    strmiids
+	    wldap32
+	    crypt32
+	    iphlpapi
+	    msdmo
+	    dmoguids
+	    wmcodecdspuuid
+	    secur32
+	    d3d11
+        dxva2
+	    dxgi
+        ${WEBRTC_LIB_DIR}/webrtc.lib
         ${KRTC_THIRD_PARTY_DIR}/lib/libcurl.lib
         ${KRTC_THIRD_PARTY_DIR}/lib/jsoncpp_static.lib
-        ${WEBRTC_LIB_DIR}/webrtc.lib
+        ${KRTC_THIRD_PARTY_DIR}/lib/libssl.lib
+	    ${KRTC_THIRD_PARTY_DIR}/lib/libcrypto.lib
     )
 elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
     target_link_libraries(krtc

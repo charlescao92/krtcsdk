@@ -1,8 +1,6 @@
 #include "krtc/tools/utils.h"
 
-#if __linux__
 #include <assert.h>
-#endif
 
 #define CHECK_TOOLS_INIT \
   if (!isInit) {         \

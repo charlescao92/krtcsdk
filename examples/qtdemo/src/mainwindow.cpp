@@ -32,7 +32,12 @@ void MainWindow::initWindow()
 	ui->previewOpenGLWidget->setMinimumSize(400,400);
 	ui->pullOpenGLWidget->setMinimumSize(400, 400);
 
-    ui->serverLineEdit->setText("1.14.148.67:1985");
+#if 0
+    ui->serverLineEdit->setText("http://charlescao92.cn:1985");
+#else
+	ui->serverLineEdit->setText("https://charlescao92.cn:1986");
+#endif
+
     ui->uidLineEdit->setText("111");
     ui->pushStreamNamelineEdit->setText("livestream");
 	ui->networkQosLabel->setText("");

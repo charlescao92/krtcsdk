@@ -30,7 +30,7 @@ public:
 	static bool GetScreenSourceList(webrtc::DesktopCapturer::SourceList& screen_source_list);
 	static bool GetWindowSourceList(webrtc::DesktopCapturer::SourceList& window_source_list);
 
-	static std::unique_ptr<DesktopCapturer> Create(SourceId source_id, size_t target_fps = 25, size_t out_width = 0, size_t out_height = 0);
+	static std::unique_ptr<DesktopCapturer> Create(SourceId source_id, size_t out_width = 0, size_t out_height = 0, size_t target_fps = 25);
 
 	virtual ~DesktopCapturer();
 

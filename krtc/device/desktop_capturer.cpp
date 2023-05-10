@@ -11,13 +11,14 @@
 #endif
 
 #include "krtc/base/krtc_global.h"
+#include "krtc/media/media_frame.h"
 
 namespace krtc {
 
     static webrtc::DesktopCaptureOptions GetCaptureOption()
     {
         auto capture_options = webrtc::DesktopCaptureOptions::CreateDefault();
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN64)
         capture_options.set_allow_directx_capturer(true);
         capture_options.set_allow_use_magnification_api(false);
 #elif defined(__APPLE__)
@@ -38,10 +39,10 @@ namespace krtc {
         return desktop_capturer->GetSourceList(&source_list);
     }
 
-    std::unique_ptr<DesktopCapturer> DesktopCapturer::Create(SourceId source_id, size_t target_fps, size_t out_width, size_t out_height)
+    std::unique_ptr<DesktopCapturer> DesktopCapturer::Create(SourceId source_id, size_t out_width, size_t out_height, size_t target_fps)
     {
         std::unique_ptr<DesktopCapturer> screen_capture(new DesktopCapturer());
-        if (!screen_capture->Init(source_id, target_fps, out_width, out_height)) {
+        if (!screen_capture->Init(source_id, out_width, out_height, target_fps)) {
             RTC_LOG(LS_WARNING) << "Failed to create DesktopCapturer(w = " << out_width
                 << ", h = " << out_height << ", fps = " << target_fps
                 << ")";
@@ -53,7 +54,7 @@ namespace krtc {
     DesktopCapturer::DesktopCapturer()
     {
         capture_options_ = webrtc::DesktopCaptureOptions::CreateDefault();
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN64)
         capture_options_.set_allow_directx_capturer(true);
         capture_options_.set_allow_use_magnification_api(false);
 #elif defined(__APPLE__)
@@ -71,7 +72,7 @@ namespace krtc {
         frame_callback_ = frame_callback;
     }
 
-    bool DesktopCapturer::Init(webrtc::DesktopCapturer::SourceId source_id, size_t target_fps, size_t out_width, size_t out_height)
+    bool DesktopCapturer::Init(webrtc::DesktopCapturer::SourceId source_id, size_t out_width, size_t out_height, size_t target_fps)
     {
         if (is_capturing_) {
             return false;
@@ -81,9 +82,9 @@ namespace krtc {
             return false;
         }
 
-        target_fps_ = target_fps;
         out_width_ = out_width;
         out_height_ = out_height;
+        target_fps_ = target_fps;
 
         if (!CreateCapture(source_id)) {
             RTC_LOG(LS_WARNING) << "Failed to found capturer.";
@@ -241,8 +242,7 @@ namespace krtc {
         OnFrame(video_frame);
     }
 
-    void DesktopCapturer::OnFrame(const webrtc::VideoFrame& frame)
-    {
+    void DesktopCapturer::OnFrame(const webrtc::VideoFrame& frame) {
        VideoCapturer::OnFrame(frame);
     }
 

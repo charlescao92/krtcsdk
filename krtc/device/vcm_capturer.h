@@ -20,8 +20,8 @@ namespace krtc {
                      public rtc::VideoSinkInterface<webrtc::VideoFrame> 
 {
  public:
-	 static std::unique_ptr<VcmCapturer> Create(const std::string& cam_id, size_t target_fps, 
-		 size_t width, size_t height);
+	 static std::unique_ptr<VcmCapturer> Create(const std::string& cam_id, size_t width, size_t height, 
+												size_t target_fps);
 
      virtual ~VcmCapturer();
 
@@ -31,7 +31,7 @@ namespace krtc {
      void OnFrame(const webrtc::VideoFrame& frame) override;
 
  private:
-	 VcmCapturer(const std::string& cam_id, size_t target_fps, size_t width, size_t height);
+	 VcmCapturer(const std::string& cam_id, size_t width, size_t height, size_t target_fps);
 
 	 void Destroy();
 

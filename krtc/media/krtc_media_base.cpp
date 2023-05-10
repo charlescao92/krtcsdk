@@ -10,8 +10,19 @@ KRTCMediaBase::KRTCMediaBase(const CONTROL_TYPE& type,
 	const int& hwnd) :
 	hwnd_(hwnd)
 {
+	// server_addr  = https://charlescao92.cn:1986
+
+	std::vector<std::string> splits;
+	if (!rtc::tokenize(server_addr, '/', &splits)) {
+		return;
+	}
+
+	if (splits.size() < 2) {
+		return;
+	}
+
 	std::string server_ip, server_port;
-	if (!rtc::tokenize_first(server_addr, ':', &server_ip, &server_port)) {
+	if (!rtc::tokenize_first(splits[1], ':', &server_ip, &server_port)) {
 		return;
 	}
 
@@ -25,7 +36,7 @@ KRTCMediaBase::KRTCMediaBase(const CONTROL_TYPE& type,
 		control = "play";
 	}
 
-	httpRequestUrl_ = "http://" + server_addr + "/rtc/v1/" + control + "/";
+	httpRequestUrl_ = server_addr + "/rtc/v1/" + control + "/";
 
 	if (!channel.empty()) {
 		channel_ = channel;

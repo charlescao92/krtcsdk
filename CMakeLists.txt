@@ -37,11 +37,7 @@ set(WEBRTC_DIR ${KRTC_DIR}/../../webrtc/webrtc-checkout/src)
 set(WEBRTC_INCLUDE_DIR ${WEBRTC_DIR})
 set(WEBRTC_LIB_DIR ${WEBRTC_DIR}/out/x64_debug_m96/obj)
 
-if (CMAKE_SYSTEM_NAME MATCHES "Windows")
-    add_definitions(-DUNICODE -D_UNICODE -DWEBRTC_WIN -DWIN32_LEAN_AND_MEAN)
-elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
-    add_definitions(-DUNICODE -D_UNICODE -DWEBRTC_Linux -DUSE_GLIB=1)
-endif()
+add_definitions(-DUNICODE -D_UNICODE)
 
 add_subdirectory("./krtc")
 add_subdirectory("./examples")

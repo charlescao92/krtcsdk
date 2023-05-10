@@ -5,7 +5,7 @@
 
 #include "krtc/tools/logstreamfile.h"
 
-#if _WIN32
+#if defined(_WIN32) || defined(_WIN64)
 #include <direct.h>
 #include <Windows.h>
 #include <ImageHlp.h>
@@ -37,8 +37,8 @@ LogStreamFile::LogStreamFile(const std::string& logPreffix) {
   time_t now = time(NULL);
   struct tm* tm_now;
   tm_now = localtime(&now);
-#if _WIN32
-  sprintf_s(ch1, sizeof(ch1),"%d-%d-%d-%d-%d-%d", 
+#if defined(_WIN32) || defined(_WIN64)
+  sprintf_s(ch1, sizeof(ch1),"%d-%d-%d-%d-%d-%d",
       tm_now->tm_year+1900, 
       tm_now->tm_mon+1, 
       tm_now->tm_mday, 

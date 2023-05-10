@@ -117,14 +117,13 @@ void KRTCPushImpl::Stop()
 
 void KRTCPushImpl::GetRtcStats() {
     KRTCGlobal::Instance()->api_thread()->PostTask(webrtc::ToQueuedTask([=]() {
-        if (!peer_connection_) {
-            return;
-        }
         RTC_LOG(LS_INFO) << "KRTCPushImpl  GetRtcStats";
         if (!stats_) {
             stats_ = new rtc::RefCountedObject<CRtcStatsCollector>(this);
         }
-        peer_connection_->GetStats(stats_.get());
+        if (peer_connection_) {
+            peer_connection_->GetStats(stats_.get());
+        }
      }));
 }
 
@@ -145,6 +144,7 @@ void KRTCPushImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
     reqMsg["api"] = httpRequestUrl_;
     reqMsg["streamurl"] = webrtcStreamUrl_;
     reqMsg["sdp"] = sdpOffer;
+   // reqMsg["tid"] = rtc::CreateRandomString(7);
     Json::StreamWriterBuilder write_builder;
     write_builder.settings_["indentation"] = "";
     std::string json_data = Json::writeString(write_builder, reqMsg);
@@ -153,7 +153,12 @@ void KRTCPushImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
 
     HttpRequest request(httpRequestUrl_, json_data);
     KRTCGlobal::Instance()->http_manager()->Post(request, [=](HttpReply reply) {
-
+        RTC_LOG(LS_INFO) << "signaling push response, url: " << reply.get_url()
+            << ", body: " << reply.get_body()
+            << ", status: " << reply.get_status_code()
+            << ", err_no: " << reply.get_errno()
+            << ", err_msg: " << reply.get_err_msg()
+            << ", response: " << reply.get_resp();
         KRTCGlobal::Instance()->api_thread()->PostTask(webrtc::ToQueuedTask([=]() {
             handleHttpPushResponse(reply);
         }));
@@ -244,11 +249,11 @@ void KRTCPushImpl::handleHttpPushResponse(const HttpReply &reply) {
         KRTCGlobal::Instance()->engine_observer()->OnPushSuccess();
     }
 
-    assert(stats_timer_ == nullptr);
+   /* assert(stats_timer_ == nullptr);
     stats_timer_ = std::make_unique<CTimer>(1 * 1000, true, [this]() {
           GetRtcStats();
     });
-    stats_timer_->Start();
+    stats_timer_->Start();*/
 }
 
 } // namespace krtc
