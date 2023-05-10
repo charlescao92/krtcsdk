@@ -1,5 +1,5 @@
 # 介绍
-https://www.yuque.com/caokunchao/rtendq/wc1ziicghs350meo 
+https://www.yuque.com/caokunchao/rtendq/wc1ziicghs350meo   
 基于native webrtc m96，实现一个sdk接口，支持srs的webrtc推拉流
 
 # 功能
@@ -10,6 +10,8 @@ https://www.yuque.com/caokunchao/rtendq/wc1ziicghs350meo
 5. 支持回调获取视频裸流
 6. 提供qt使用demo
 7. 支持linux下的webrtc推拉流
+8. 支持https或者http推流流
+9. 支持nvenc和qsv硬件编码
 
 
 # 待做
