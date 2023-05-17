@@ -72,18 +72,16 @@ void KRTCPushImpl::Start() {
     cricket::AudioOptions options;
     rtc::scoped_refptr<LocalAudioSource> audio_source(LocalAudioSource::Create(&options));
 
-    rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(
-            peer_connection_factory->CreateAudioTrack(kAudioLabel, audio_source));
-    auto add_audio_track_result = peer_connection_->AddTrack(audio_track, { kStreamId });
+    audio_track_ = peer_connection_factory->CreateAudioTrack(kAudioLabel, audio_source);
+    auto add_audio_track_result = peer_connection_->AddTrack(audio_track_, { kStreamId });
     if (!add_audio_track_result.ok()) {
         RTC_LOG(LS_ERROR) << "Failed to add audio track to PeerConnection: "
             << add_audio_track_result.error().message();
     }
 
-    rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(
-        peer_connection_factory->CreateVideoTrack(
-            kAudioLabel, KRTCGlobal::Instance()->current_video_source()));
-    auto add_video_track_result = peer_connection_->AddTrack(video_track, { kStreamId });
+    video_track_ = peer_connection_factory->CreateVideoTrack(
+        kVideoLabel, KRTCGlobal::Instance()->current_video_source());
+    auto add_video_track_result = peer_connection_->AddTrack(video_track_, { kStreamId });
     if (!add_video_track_result.ok()) {
         RTC_LOG(LS_ERROR) << "Failed to add video track to PeerConnection: "
             << add_video_track_result.error().message();
@@ -125,6 +123,28 @@ void KRTCPushImpl::GetRtcStats() {
             peer_connection_->GetStats(stats_.get());
         }
      }));
+}
+
+void KRTCPushImpl::SetEnableVideo(bool enable)
+{
+    if (!peer_connection_) {
+        return;
+    }
+
+    if (video_track_) {
+        video_track_->set_enabled(enable);
+    }
+}
+
+void KRTCPushImpl::SetEnableAudio(bool enable)
+{
+    if (!peer_connection_) {
+        return;
+    }
+
+    if (audio_track_) {
+        audio_track_->set_enabled(enable);
+    }
 }
 
 void KRTCPushImpl::OnDataChannel(

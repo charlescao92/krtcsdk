@@ -20,6 +20,8 @@ public:
 	void Start();
 	void Stop();
 	void Destroy();
+	void SetEnableVideo(bool enable) {}
+	void SetEnableAudio(bool enable) {}
 
 private:
 	void OnFrame(const webrtc::VideoFrame& frame) override;

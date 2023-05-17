@@ -1,4 +1,4 @@
-#include <rtc_base/thread.h>
+﻿#include <rtc_base/thread.h>
 #include <rtc_base/logging.h>
 #include <rtc_base/task_utils/to_queued_task.h>
 #include <rtc_base/string_encode.h>
@@ -39,6 +39,20 @@ void KRTCPusher::Destroy() {
     RTC_LOG(LS_INFO) << "KRTCPusher Destroy";
 
     delete this;
+}
+
+void KRTCPusher::SetEnableVideo(bool enable)
+{
+    if (push_impl_) {
+        push_impl_->SetEnableVideo(enable);
+    }
+}
+
+void KRTCPusher::SetEnableAudio(bool enable)
+{
+    if (push_impl_) {
+        push_impl_->SetEnableAudio(enable);
+    }
 }
 
 } // namespace krtc

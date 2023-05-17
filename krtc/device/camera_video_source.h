@@ -11,6 +11,8 @@ public:
 	void Start() override;
 	void Stop() override;
 	void Destroy() override;
+	void SetEnableVideo(bool enable) {}
+	void SetEnableAudio(bool enable) {}
 
 private:
 	explicit CameraVideoSource(const char* cam_id);

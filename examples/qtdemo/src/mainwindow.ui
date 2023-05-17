@@ -157,6 +157,20 @@
                  </property>
                 </widget>
                </item>
+               <item row="1" column="0">
+                <widget class="QCheckBox" name="pushVideoCheckBox">
+                 <property name="text">
+                  <string>推流视频</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QCheckBox" name="pushAudioCheckBox">
+                 <property name="text">
+                  <string>推流音频</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </item>
              <item>

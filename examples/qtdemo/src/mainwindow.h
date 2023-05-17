@@ -32,6 +32,8 @@ private slots:
     void onShowToast(const QString& toast, bool err);
     void onBeautyCheckBoxStateChanged(int state);
     void onBeautyDermHSliderValueChanged(int value);
+    void onPushAudioCheckBoxStateChanged(int state);
+    void onPushVideoCheckBoxStateChanged(int state);
 
     void OnCapturePureVideoFrameSlots(MediaFrameSharedPointer videoFrame);
     void OnPullVideoFrameSlots(MediaFrameSharedPointer videoFrame);

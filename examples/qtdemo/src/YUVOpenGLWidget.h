@@ -1,4 +1,4 @@
-#ifndef YUVOPENGLWIDGET_H
+﻿#ifndef YUVOPENGLWIDGET_H
 #define YUVOPENGLWIDGET_H
 
 #include <QOpenGLWidget>

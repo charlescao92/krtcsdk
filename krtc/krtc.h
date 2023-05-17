@@ -1,4 +1,4 @@
-#ifndef KRTCSDK_KRTC_KRTC_H_
+Ôªø#ifndef KRTCSDK_KRTC_KRTC_H_
 #define KRTCSDK_KRTC_KRTC_H_
 
 #ifdef KRTC_STATIC
@@ -58,6 +58,9 @@ public:
     virtual void Start() = 0;
     virtual void Stop() = 0;
     virtual void Destroy() = 0;
+
+    virtual void SetEnableVideo(bool enable) = 0;
+    virtual void SetEnableAudio(bool enable) = 0;
 };
 
 class IAudioHandler : public IMediaHandler {
@@ -87,16 +90,9 @@ public:
     virtual void OnEncodedAudioFrame(std::shared_ptr<MediaFrame> audio_frame) {}
     virtual void OnCapturePureVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) {}
     virtual void OnPullVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) {}
-
-    // ÷±≤•√¿—’
-   /* virtual std::shared_ptr<krtc::MediaFrame> OnPreprocessVideoFrame(std::shared_ptr<krtc::MediaFrame> origin_frame) {
-        return origin_frame;
-    }*/
-
     virtual krtc::MediaFrame* OnPreprocessVideoFrame(krtc::MediaFrame* origin_frame) {
         return origin_frame;
     }
-
 };
 
 enum class KRTC_API CONTROL_TYPE {
@@ -123,9 +119,11 @@ public:
     static IAudioHandler* CreateMicSource(const char* mic_id);
 
     static IMediaHandler* CreatePreview(const unsigned int& hwnd = 0);
-    static IMediaHandler* CreatePusher(const char* server_addr, const char* push_channel = "livestream");
-    static IMediaHandler* CreatePuller(const char* server_addr, const char* pull_channel = "livestream",
-                                       const unsigned int& hwnd = 0);
+    static IMediaHandler* CreatePusher(const char* server_addr, 
+                                        const char* push_channel = "livestream");
+    static IMediaHandler* CreatePuller(const char* server_addr, 
+                                        const char* pull_channel = "livestream",
+                                        const unsigned int& hwnd = 0);
 };
 
 } // namespace krtc

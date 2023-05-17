@@ -12,11 +12,13 @@ namespace krtc {
 
 class MicImpl : public IAudioHandler, webrtc::AudioTransport
 {
-public:
+private:
     void Start() override;
     void Stop() override;
     void Destroy() override;
- 
+    void SetEnableVideo(bool enable) {}
+    void SetEnableAudio(bool enable) {}
+
 private:
     explicit MicImpl(const char* mic_id);
     ~MicImpl() override;

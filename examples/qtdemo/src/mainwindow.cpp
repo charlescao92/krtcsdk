@@ -8,7 +8,6 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -56,6 +55,9 @@ void MainWindow::initWindow()
 	ui->beautyDermHSlider->setValue(20);
 	ui->beautyDermHSlider->setEnabled(false);
 
+	ui->pushAudioCheckBox->setChecked(true);
+	ui->pushVideoCheckBox->setChecked(true);
+
     connect(ui->startDeviceBtn, &QPushButton::clicked,
         this, &MainWindow::onStartDeviceBtnClicked);
     connect(ui->startPreviewBtn, &QPushButton::clicked,
@@ -99,6 +101,10 @@ void MainWindow::initWindow()
 		this, SLOT(onBeautyCheckBoxStateChanged(int)));
 	connect(ui->beautyDermHSlider, SIGNAL(valueChanged(int)),
 		this, SLOT(onBeautyDermHSliderValueChanged(int)));
+	connect(ui->pushAudioCheckBox, SIGNAL(stateChanged(int)),
+		this, SLOT(onPushAudioCheckBoxStateChanged(int)));
+	connect(ui->pushVideoCheckBox, SIGNAL(stateChanged(int)),
+		this, SLOT(onPushVideoCheckBoxStateChanged(int)));
 
 	krtc::KRTCEngine::Init(this);
 
@@ -244,6 +250,37 @@ void MainWindow::onBeautyCheckBoxStateChanged(int state)
 void MainWindow::onBeautyDermHSliderValueChanged(int value)
 {
 	beauty_index_ = value;
+}
+
+void MainWindow::onPushAudioCheckBoxStateChanged(int state)
+{
+	if (!krtc_pusher_) {
+		return;
+	}
+	if (state == Qt::CheckState::Checked)
+	{
+		krtc_pusher_->SetEnableAudio(true);
+	}
+	else
+	{
+		krtc_pusher_->SetEnableAudio(false);
+	}
+}
+
+void MainWindow::onPushVideoCheckBoxStateChanged(int state)
+{
+	if (!krtc_pusher_) {
+		return;
+	}
+	if (state == Qt::CheckState::Checked)
+	{
+		krtc_pusher_->SetEnableVideo(true);
+	}
+	else
+	{
+		krtc_pusher_->SetEnableVideo(false);
+	}
+
 }
 
 void MainWindow::OnCapturePureVideoFrameSlots(MediaFrameSharedPointer videoFrame)

@@ -31,6 +31,9 @@ public:
     void Stop();
     void GetRtcStats();
 
+    void SetEnableVideo(bool enable = true);
+    void SetEnableAudio(bool enable = true);
+
 private:
     // PeerConnectionObserver implementation.
     void OnSignalingChange(
@@ -57,6 +60,9 @@ private:
 private:
     rtc::scoped_refptr<CRtcStatsCollector> stats_;
     std::unique_ptr<CTimer> stats_timer_;
+
+    rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track_;
+    rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track_;
 };
 
 } // namespace krtc

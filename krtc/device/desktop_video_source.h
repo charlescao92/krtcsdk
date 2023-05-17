@@ -7,10 +7,12 @@ namespace krtc {
 
 class DesktopVideoSource : public IVideoHandler
 {
-public:
+private:
 	void Start() override;
 	void Stop() override;
 	void Destroy() override;
+	void SetEnableVideo(bool enable) {}
+	void SetEnableAudio(bool enable) {}
 
 private:
 	DesktopVideoSource(uint16_t screen_index = 0, uint16_t target_fps = 30);

@@ -14,6 +14,9 @@ private:
     void Stop();
     void Destroy();
 
+    void SetEnableVideo(bool enable) {}
+    void SetEnableAudio(bool enable) {}
+
 private:
     explicit KRTCPuller(const std::string& server_addr, const std::string& push_channel = "livestream", int hwnd = 0);
     ~KRTCPuller();

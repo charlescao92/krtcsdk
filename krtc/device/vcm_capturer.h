@@ -42,6 +42,8 @@ public:
 	 VcmCapturer(const std::string& cam_id, size_t width, size_t height, size_t target_fps);
 
 	 void Destroy();
+	 void SetEnableVideo(bool enable) {}
+	 void SetEnableAudio(bool enable) {}
 
      std::string cam_id_;
      rtc::scoped_refptr<webrtc::VideoCaptureModule> vcm_;
