@@ -9,6 +9,7 @@
 #include <rtc_base/logging.h>
 
 #include "krtc/base/krtc_global.h"
+#include "krtc/media/media_frame.h"
 
 namespace krtc {
 VideoCapturer::~VideoCapturer() = default;
@@ -26,6 +27,11 @@ void VideoCapturer::OnFrame(const webrtc::VideoFrame& original_frame) {
     if (!video_adapter_.AdaptFrameResolution(
         frame.width(), frame.height(), frame.timestamp_us() * 1000,
         &cropped_width, &cropped_height, &out_width, &out_height)) {
+
+        RTC_LOG(LS_WARNING) << "AdaptFrameResolution width:" << frame.width()
+                << ", height:" << frame.height()
+                << ", timestamp_us:" << frame.timestamp_us();
+
         // Drop frame in order to respect frame rate constraint.
         return;
     }
@@ -100,7 +106,6 @@ void VideoCapturer::UpdateVideoAdapter() {
 }
 
 webrtc::VideoFrame VideoCapturer::MaybePreprocess(const webrtc::VideoFrame& frame) {
-    webrtc::MutexLock lock(&lock_);
     if (preprocessor_ != nullptr) {
         return preprocessor_->Preprocess(frame);
     }
@@ -108,4 +113,5 @@ webrtc::VideoFrame VideoCapturer::MaybePreprocess(const webrtc::VideoFrame& fram
         return frame;
     }
 }
+
 }  // namespace krtc

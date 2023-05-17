@@ -87,6 +87,16 @@ public:
     virtual void OnEncodedAudioFrame(std::shared_ptr<MediaFrame> audio_frame) {}
     virtual void OnCapturePureVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) {}
     virtual void OnPullVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) {}
+
+    // ÷±≤•√¿—’
+   /* virtual std::shared_ptr<krtc::MediaFrame> OnPreprocessVideoFrame(std::shared_ptr<krtc::MediaFrame> origin_frame) {
+        return origin_frame;
+    }*/
+
+    virtual krtc::MediaFrame* OnPreprocessVideoFrame(krtc::MediaFrame* origin_frame) {
+        return origin_frame;
+    }
+
 };
 
 enum class KRTC_API CONTROL_TYPE {

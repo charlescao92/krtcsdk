@@ -43,8 +43,9 @@ void YUVOpenGLWidget::updateFrame(MediaFrameSharedPointer frame)
     m_videoFrame->data_len[0] = stridey * src_height;
     m_videoFrame->data_len[1] = strideu * ((src_height + 1) / 2);
     m_videoFrame->data_len[2] = stridev * ((src_height + 1) / 2);
-    m_videoFrame->data[1] = m_videoFrame->data[0] + m_videoFrame->data_len[0];
-    m_videoFrame->data[2] = m_videoFrame->data[1] + m_videoFrame->data_len[1];
+    m_videoFrame->data[0] = new char[m_videoFrame->data_len[0]];
+    m_videoFrame->data[1] = new char[m_videoFrame->data_len[1]];
+    m_videoFrame->data[2] = new char[m_videoFrame->data_len[2]];
     memcpy(m_videoFrame->data[0], frame->data[0], frame->data_len[0]);
     memcpy(m_videoFrame->data[1], frame->data[1], frame->data_len[1]);
     memcpy(m_videoFrame->data[2], frame->data[2], frame->data_len[2]);
@@ -249,6 +250,25 @@ void YUVOpenGLWidget::paintGL()
 
 void YUVOpenGLWidget::releaseMemory()
 {
+    if (m_pTextureY) {
+        m_pTextureY->destroy();
+        m_pTextureY = nullptr;
+    }
 
+    if (m_pTextureU) {
+        m_pTextureU->destroy();
+        m_pTextureU = nullptr;
+    }
+
+    if (m_pTextureV) {
+        m_pTextureV->destroy();
+        m_pTextureV = nullptr;
+    }
+
+    if (m_pShaderProgram) {
+        m_pShaderProgram->removeAllShaders();
+        m_pShaderProgram->release();
+        m_pShaderProgram = nullptr;
+    }
 }
 

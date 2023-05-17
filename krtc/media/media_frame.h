@@ -1,4 +1,4 @@
-#ifndef KRTCSDK_KRTC_MEDIA_MEDIA_FRAME_H_
+﻿#ifndef KRTCSDK_KRTC_MEDIA_MEDIA_FRAME_H_
 #define KRTCSDK_KRTC_MEDIA_MEDIA_FRAME_H_
 
 #include "krtc/krtc.h"
@@ -52,14 +52,20 @@ public:
         memset(data, 0, sizeof(data));
         memset(data_len, 0, sizeof(data_len));
         memset(stride, 0, sizeof(stride));
-        data[0] = new char[size];
-        data_len[0] = size;
     }
 
     ~MediaFrame() {
         if (data[0]) {
             delete[] data[0];
             data[0] = nullptr;
+        }
+        if (data[1]) {
+            delete[] data[1];
+            data[1] = nullptr;
+        }
+        if (data[2]) {
+            delete[] data[2];
+            data[2] = nullptr;
         }
     }
 

@@ -120,10 +120,7 @@ void KRTCPreview::OnFrame(const webrtc::VideoFrame& frame){
         memcpy(media_frame->data[2], vfb->GetI420()->DataV(), media_frame->data_len[2]);
 
         KRTCGlobal::Instance()->engine_observer()->OnCapturePureVideoFrame(media_frame);
-        delete[] media_frame->data[1];
-        delete[] media_frame->data[2];
     }
-
 }
 
 } // namespace krtc

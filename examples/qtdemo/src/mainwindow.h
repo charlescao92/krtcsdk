@@ -30,6 +30,9 @@ private slots:
     void onStartPushBtnClicked();
     void onStartPullBtnClicked();
     void onShowToast(const QString& toast, bool err);
+    void onBeautyCheckBoxStateChanged(int state);
+    void onBeautyDermHSliderValueChanged(int value);
+
     void OnCapturePureVideoFrameSlots(MediaFrameSharedPointer videoFrame);
     void OnPullVideoFrameSlots(MediaFrameSharedPointer videoFrame);
 
@@ -63,19 +66,20 @@ private:
 
 private:
     // KRTCEngineObserver
-    void OnAudioSourceSuccess() override;
-    void OnAudioSourceFailed(krtc::KRTCError err) override;
-    void OnVideoSourceSuccess() override;
-    void OnVideoSourceFailed(krtc::KRTCError err) override;
-    void OnPreviewSuccess() override;
-    void OnPreviewFailed(krtc::KRTCError err) override;
-    void OnNetworkInfo(uint64_t rtt_ms, uint64_t packets_lost, double fraction_lost) override;
-    void OnPushSuccess() override;
-    void OnPushFailed(krtc::KRTCError err) override;
-    void OnPullSuccess() override;
-    void OnPullFailed(krtc::KRTCError err) override;
-    void OnCapturePureVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) override;
-    void OnPullVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) override;
+    virtual void OnAudioSourceSuccess() override;
+    virtual void OnAudioSourceFailed(krtc::KRTCError err) override;
+    virtual void OnVideoSourceSuccess() override;
+    virtual void OnVideoSourceFailed(krtc::KRTCError err) override;
+    virtual void OnPreviewSuccess() override;
+    virtual void OnPreviewFailed(krtc::KRTCError err) override;
+    virtual void OnNetworkInfo(uint64_t rtt_ms, uint64_t packets_lost, double fraction_lost) override;
+    virtual void OnPushSuccess() override;
+    virtual void OnPushFailed(krtc::KRTCError err) override;
+    virtual void OnPullSuccess() override;
+    virtual void OnPullFailed(krtc::KRTCError err) override;
+    virtual void OnCapturePureVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) override;
+    virtual void OnPullVideoFrame(std::shared_ptr<krtc::MediaFrame> video_frame) override;
+    virtual krtc::MediaFrame* OnPreprocessVideoFrame(krtc::MediaFrame* origin_frame);
 
 private:
     krtc::IVideoHandler* cam_source_ = nullptr;
@@ -86,7 +90,8 @@ private:
     krtc::IMediaHandler* krtc_preview_ = nullptr;
     krtc::IMediaHandler* krtc_pusher_ = nullptr;
     krtc::IMediaHandler* krtc_puller_ = nullptr;
-
+    bool enable_beauty_ = false;
+    int beauty_index_ = 20;
 };
 
 #endif // MAINWINDOW_H

@@ -38,9 +38,9 @@ private:
             media_frame->data_len[0] = strideY * src_height;
             media_frame->data_len[1] = strideU * ((src_height + 1) / 2);
             media_frame->data_len[2] = strideV * ((src_height + 1) / 2);
-
-            media_frame->data[1] = media_frame->data[0] + media_frame->data_len[0];
-            media_frame->data[2] = media_frame->data[1] + media_frame->data_len[1];
+            media_frame->data[0] = new char[media_frame->data_len[0]];
+            media_frame->data[1] = new char[media_frame->data_len[1]];
+            media_frame->data[2] = new char[media_frame->data_len[2]];
             memcpy(media_frame->data[0], video_frame.video_frame_buffer()->GetI420()->DataY(), media_frame->data_len[0]);
             memcpy(media_frame->data[1], video_frame.video_frame_buffer()->GetI420()->DataU(), media_frame->data_len[1]);
             memcpy(media_frame->data[2], video_frame.video_frame_buffer()->GetI420()->DataV(), media_frame->data_len[2]);

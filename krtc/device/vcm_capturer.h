@@ -16,6 +16,14 @@
 
 namespace krtc {
 
+
+class VcmFramePreprocessor : public VideoCapturer::FramePreprocessor {
+public:
+	VcmFramePreprocessor() = default;
+
+	webrtc::VideoFrame Preprocess(const webrtc::VideoFrame& frame);
+};
+
  class VcmCapturer : public IVideoHandler, public VideoCapturer,
                      public rtc::VideoSinkInterface<webrtc::VideoFrame> 
 {
@@ -54,6 +62,8 @@ namespace krtc {
 		 const size_t fps = 30;
 
 		 auto vcm_capture = VcmCapturer::Create(cam_id, width, height, fps);
+		 vcm_capture->SetFramePreprocessor(std::make_unique<VcmFramePreprocessor>());
+
 		 if (vcm_capture) {
 			 return new rtc::RefCountedObject<VcmCapturerTrackSource>(std::move(vcm_capture));
 		 }

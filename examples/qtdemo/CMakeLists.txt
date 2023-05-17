@@ -47,9 +47,12 @@ else()
     endif()
 endif()
 
+set(OPENCV_LIB_DIR "D:/OpenCV4.6/opencv/build/x64/vc14/lib")
+
 include_directories(
     ${KRTC_DIR}
     ${KRTC_DIR}/examples/qtdemo
+    "D:/OpenCV4.6/opencv/build/include"
 )
 
 link_directories(
@@ -59,7 +62,11 @@ link_directories(
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     message(STATUS "Current platform: Windows")
 
-    target_link_libraries(qtdemo PRIVATE Qt${QT_VERSION_MAJOR}::Widgets krtc)
+    target_link_libraries(qtdemo PRIVATE Qt${QT_VERSION_MAJOR}::Widgets 
+    krtc
+    ${OPENCV_LIB_DIR}/opencv_world460d.lib
+    
+    )
 
     set_target_properties(qtdemo PROPERTIES
         MACOSX_BUNDLE_GUI_IDENTIFIER charlescao92.cn

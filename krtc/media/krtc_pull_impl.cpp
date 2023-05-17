@@ -161,6 +161,7 @@ void KRTCPullImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
     reqMsg["api"] = httpRequestUrl_;
     reqMsg["streamurl"] = webrtcStreamUrl_;
     reqMsg["sdp"] = sdpOffer;
+    reqMsg["tid"] = rtc::CreateRandomString(7);
     Json::StreamWriterBuilder write_builder;
     write_builder.settings_["indentation"] = "";
     std::string json_data = Json::writeString(write_builder, reqMsg);

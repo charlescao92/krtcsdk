@@ -154,6 +154,7 @@ int32_t MicImpl::RecordedDataIsAvailable(const void* audioSamples,
     frame->fmt.sub_fmt.audio_fmt.total_delay_ms = totalDelayMS;
     frame->fmt.sub_fmt.audio_fmt.key_pressed = keyPressed;
     frame->data_len[0] = len;
+    frame->data[0] = new char[frame->data_len[0]];
     memcpy(frame->data[0], audioSamples, len);
 
     // 计算时间戳，根据采样频率进行单调递增

@@ -5,6 +5,10 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -25,7 +29,7 @@ MainWindow::~MainWindow()
 void MainWindow::initWindow()
 {
 	setWindowTitle(QStringLiteral("srs webrtc推拉流qtdemo"));
-    setMinimumSize(1200, 600);
+    setMinimumSize(1400, 600);
 	
 	ui->leftWidget->setFixedWidth(250);
 
@@ -46,6 +50,11 @@ void MainWindow::initWindow()
 	ui->pullStreamNameLineEdit->setText("livestream");
 	ui->pullUidLineEdit->setText("222");
 	ui->cameraRadioButton->setChecked(true);
+
+	ui->beautyDermHSlider->setRange(1, 40);
+	ui->beautyDermHSlider->setSingleStep(10);
+	ui->beautyDermHSlider->setValue(20);
+	ui->beautyDermHSlider->setEnabled(false);
 
     connect(ui->startDeviceBtn, &QPushButton::clicked,
         this, &MainWindow::onStartDeviceBtnClicked);
@@ -86,6 +95,10 @@ void MainWindow::initWindow()
 			stopPull();
 			ui->startPullBtn->setText(QStringLiteral("开始拉流"));
 		});
+	connect(ui->beautyCheckBox, SIGNAL(stateChanged(int)),
+		this, SLOT(onBeautyCheckBoxStateChanged(int)));
+	connect(ui->beautyDermHSlider, SIGNAL(valueChanged(int)),
+		this, SLOT(onBeautyDermHSliderValueChanged(int)));
 
 	krtc::KRTCEngine::Init(this);
 
@@ -211,6 +224,26 @@ void MainWindow::onShowToast(const QString& toast, bool err)
 		ui->statusLabel->setStyleSheet("color:blue;");
 	}
 	ui->statusLabel->setText(toast);
+}
+
+void MainWindow::onBeautyCheckBoxStateChanged(int state)
+{
+	if (state == Qt::CheckState::Checked)
+	{
+		enable_beauty_ = true;
+		ui->beautyDermHSlider->setEnabled(true);
+	}
+	else
+	{
+		enable_beauty_ = false;
+		ui->beautyDermHSlider->setEnabled(false);
+	}
+
+}
+
+void MainWindow::onBeautyDermHSliderValueChanged(int value)
+{
+	beauty_index_ = value;
 }
 
 void MainWindow::OnCapturePureVideoFrameSlots(MediaFrameSharedPointer videoFrame)
@@ -455,8 +488,9 @@ void MainWindow::OnCapturePureVideoFrame(std::shared_ptr<krtc::MediaFrame> frame
 	video_frame->data_len[0] = stridey * src_height;
 	video_frame->data_len[1] = strideu * ((src_height + 1) / 2);
 	video_frame->data_len[2] = stridev * ((src_height + 1) / 2);
-	video_frame->data[1] = video_frame->data[0] + video_frame->data_len[0];
-	video_frame->data[2] = video_frame->data[1] + video_frame->data_len[1];
+	video_frame->data[0] = new char[video_frame->data_len[0]];
+	video_frame->data[1] = new char[video_frame->data_len[1]];
+	video_frame->data[2] = new char[video_frame->data_len[2]];
 	memcpy(video_frame->data[0], frame->data[0], frame->data_len[0]);
 	memcpy(video_frame->data[1], frame->data[1], frame->data_len[1]);
 	memcpy(video_frame->data[2], frame->data[2], frame->data_len[2]);
@@ -483,13 +517,73 @@ void MainWindow::OnPullVideoFrame(std::shared_ptr<krtc::MediaFrame> frame)
 	video_frame->data_len[0] = stridey * src_height;
 	video_frame->data_len[1] = strideu * ((src_height + 1) / 2);
 	video_frame->data_len[2] = stridev * ((src_height + 1) / 2);
-	video_frame->data[1] = video_frame->data[0] + video_frame->data_len[0];
-	video_frame->data[2] = video_frame->data[1] + video_frame->data_len[1];
+	video_frame->data[0] = new char[video_frame->data_len[0]];
+	video_frame->data[1] = new char[video_frame->data_len[1]];
+	video_frame->data[2] = new char[video_frame->data_len[2]];
 	memcpy(video_frame->data[0], frame->data[0], frame->data_len[0]);
 	memcpy(video_frame->data[1], frame->data[1], frame->data_len[1]);
 	memcpy(video_frame->data[2], frame->data[2], frame->data_len[2]);
 
 	emit pullVideoFrameSignal(video_frame);
+}
+
+static void CopyYUVToImage(uchar* dst, uint8_t* pY, uint8_t* pU, uint8_t* pV, int width, int height)
+{
+	uint32_t size = width * height;
+	memcpy(dst, pY, size);
+	memcpy(dst + size, pU, size / 4);
+	memcpy(dst + size + size / 4, pV, size / 4);
+}
+
+static void CopyImageToYUV(uint8_t* pY, uint8_t* pU, uint8_t* pV, uchar* src, int width, int height)
+{
+	uint32_t size = width * height;
+	memcpy(pY, src, size);
+	memcpy(pU, src + size, size / 4);
+	memcpy(pV, src + size + size / 4, size / 4);
+}
+
+krtc::MediaFrame* MainWindow::OnPreprocessVideoFrame(krtc::MediaFrame* origin_frame)
+{
+	if (!enable_beauty_) {
+		return origin_frame;
+	}
+
+	int width = origin_frame->fmt.sub_fmt.video_fmt.width;
+	int height = origin_frame->fmt.sub_fmt.video_fmt.height;
+
+	// yuv转为cv::Mat
+	cv::Mat yuvImage;
+	yuvImage.create(height * 3 / 2, width, CV_8UC1);
+	CopyYUVToImage(yuvImage.data, 
+		(uint8_t*)origin_frame->data[0],
+		(uint8_t*)origin_frame->data[1],
+		(uint8_t*)origin_frame->data[2],
+		width, height);
+	cv::Mat rgbImage;
+	cv::cvtColor(yuvImage, rgbImage, cv::COLOR_YUV2BGR_I420);
+
+	// 美颜
+	cv::Mat dst_image;
+#if 0
+    cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3), cv::Point(-1, -1));
+	cv::Mat image_erode;
+    erode(rgbImage, image_erode, element, cv::Point(-1, -1), 1);		//腐蚀
+    erode(image_erode, dst_image, element, cv::Point(-1, -1), 1);	//腐蚀
+#else
+	bilateralFilter(rgbImage, dst_image, beauty_index_, beauty_index_ * 2, beauty_index_ * 2);
+#endif
+	// cv::Mat转为yuv
+	cv::Mat dstYuvImage;
+	cv::cvtColor(dst_image, dstYuvImage, cv::COLOR_BGR2YUV_I420);
+	CopyImageToYUV(
+		(uint8_t*)origin_frame->data[0],
+		(uint8_t*)origin_frame->data[1],
+		(uint8_t*)origin_frame->data[2], 
+		dstYuvImage.data,
+		width, height);
+
+	return std::move(origin_frame);
 }
 
 void MainWindow::OnNetworkInfo(uint64_t rtt_ms, uint64_t packets_lost, double fraction_lost)

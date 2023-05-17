@@ -21,6 +21,7 @@ public:
 	void Stop();
 	void Destroy();
 
+private:
 	void OnFrame(const webrtc::VideoFrame& frame) override;
 
 private:

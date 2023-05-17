@@ -105,13 +105,13 @@ void KRTCPushImpl::Start() {
 
 void KRTCPushImpl::Stop()
 {
-    if (peer_connection_) {
-        peer_connection_ = nullptr;
-    }
-
     if (stats_timer_) {
         stats_timer_->Stop();
         stats_timer_ = nullptr;
+    }
+
+    if (peer_connection_) {
+        peer_connection_ = nullptr;
     }
 }
 
@@ -144,7 +144,7 @@ void KRTCPushImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
     reqMsg["api"] = httpRequestUrl_;
     reqMsg["streamurl"] = webrtcStreamUrl_;
     reqMsg["sdp"] = sdpOffer;
-   // reqMsg["tid"] = rtc::CreateRandomString(7);
+    reqMsg["tid"] = rtc::CreateRandomString(7);
     Json::StreamWriterBuilder write_builder;
     write_builder.settings_["indentation"] = "";
     std::string json_data = Json::writeString(write_builder, reqMsg);
@@ -249,11 +249,11 @@ void KRTCPushImpl::handleHttpPushResponse(const HttpReply &reply) {
         KRTCGlobal::Instance()->engine_observer()->OnPushSuccess();
     }
 
-   /* assert(stats_timer_ == nullptr);
+    assert(stats_timer_ == nullptr);
     stats_timer_ = std::make_unique<CTimer>(1 * 1000, true, [this]() {
           GetRtcStats();
     });
-    stats_timer_->Start();*/
+    stats_timer_->Start();
 }
 
 } // namespace krtc
