@@ -6,6 +6,11 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(CMAKE_CXX_FLAGS "-fno-rtti -g -pipe -W -Wall -fPIC")
 endif()
 
+set(WEBRTC_DIR ${KRTC_DIR}/third_party/webrtc)
+set(WEBRTC_INCLUDE_DIR ${WEBRTC_DIR}/include)
+set(WEBRTC_LIB_DIR ${WEBRTC_DIR}/lib)
+set(FFMPEG_DEV_DIR ${KRTC_DIR}/third_party/ffmpeg)
+
 file(GLOB all_src
 	./*.cpp
 	./base/*.cpp
@@ -37,6 +42,7 @@ endif()
 
 include_directories(
     ${KRTC_DIR}
+    ${KRTC_DIR}/third_party
     ${KRTC_THIRD_PARTY_DIR}/include
     ${WEBRTC_INCLUDE_DIR}
     ${WEBRTC_INCLUDE_DIR}/third_party/abseil-cpp
@@ -49,11 +55,13 @@ include_directories(
     ${KRTC_DIR}/krtc/codec/nvcodec
 	${KRTC_DIR}/krtc/codec/qsvcodec
 	${KRTC_DIR}/krtc/codec/qsvcodec/include
+    ${FFMPEG_DEV_DIR}/include
 )
 
 link_directories(
     ${WEBRTC_LIB_DIR}
     ${KRTC_THIRD_PARTY_DIR}/lib
+    ${FFMPEG_DEV_DIR}/lib
 )
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -66,6 +74,8 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
         -D_UNICODE
         -DWIN32_LEAN_AND_MEAN
         -DUSE_EXTERNAL_ENCOER
+        -DUSE_EXTERNAL_DECOER
+        -DWEBRTC_USE_H265
     )
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
     add_definitions(-DKRTC_API_EXPORT
@@ -75,8 +85,8 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
 endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
-    add_library(krtc SHARED ${all_src} "codec/common_encoder.h")
-elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    add_library(krtc SHARED ${all_src} )
+    elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
     add_library(krtc_static STATIC ${all_src})
     set_target_properties(krtc_static PROPERTIES  OUTPUT_NAME "krtc")
     set_target_properties(krtc_static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
@@ -102,11 +112,21 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 	    d3d11
         dxva2
 	    dxgi
+        ${FFMPEG_DEV_DIR}/lib/avformat.lib  
+        ${FFMPEG_DEV_DIR}/lib/avcodec.lib   
+        ${FFMPEG_DEV_DIR}/lib/avdevice.lib  
+        ${FFMPEG_DEV_DIR}/lib/avfilter.lib  
+        ${FFMPEG_DEV_DIR}/lib/avutil.lib    
+        ${FFMPEG_DEV_DIR}/lib/postproc.lib  
+        ${FFMPEG_DEV_DIR}/lib/swresample.lib
+        ${FFMPEG_DEV_DIR}/lib/swscale.lib
+
         ${WEBRTC_LIB_DIR}/webrtc.lib
+        ${KRTC_THIRD_PARTY_DIR}/lib/libssh2.lib
+        ${KRTC_THIRD_PARTY_DIR}/lib/zlibstatic.lib 
         ${KRTC_THIRD_PARTY_DIR}/lib/libcurl.lib
         ${KRTC_THIRD_PARTY_DIR}/lib/jsoncpp_static.lib
-        ${KRTC_THIRD_PARTY_DIR}/lib/libssl.lib
-	    ${KRTC_THIRD_PARTY_DIR}/lib/libcrypto.lib
+        ${KRTC_THIRD_PARTY_DIR}/lib/x265-static.lib
     )
 elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
     target_link_libraries(krtc

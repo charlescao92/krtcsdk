@@ -34,6 +34,7 @@
 #include "krtc/media/default.h"
 #include "krtc/media/krtc_pull_impl.h"
 #include "krtc/base/krtc_global.h"
+#include "krtc/codec/external_video_decoder_factory.h"
 
 namespace krtc {
 
@@ -81,7 +82,12 @@ void KRTCPullImpl::Start() {
         webrtc::CreateBuiltinAudioEncoderFactory(),
         webrtc::CreateBuiltinAudioDecoderFactory(),
         webrtc::CreateBuiltinVideoEncoderFactory(),
-        webrtc::CreateBuiltinVideoDecoderFactory(), nullptr /* audio_mixer */,
+#if USE_EXTERNAL_DECOER
+        krtc::CreateBuiltinExternalVideoDecoderFactory(),
+#else
+        webrtc::CreateBuiltinVideoDecoderFactory(),
+#endif
+        nullptr /* audio_mixer */,
         nullptr /* audio_processing */);
 
     webrtc::PeerConnectionInterface::RTCConfiguration config;

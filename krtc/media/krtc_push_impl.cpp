@@ -161,8 +161,8 @@ void KRTCPushImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
     RTC_LOG(INFO) << "sdp offer:" << sdpOffer;
 
     Json::Value reqMsg;
-    reqMsg["api"] = httpRequestUrl_;
-    reqMsg["streamurl"] = webrtcStreamUrl_;
+    reqMsg["api"] = "http://1.14.148.67:1985/rtc/v1/publish?codec=hevc";// httpRequestUrl_;
+    reqMsg["streamurl"] = webrtcStreamUrl_ + "?codec=hevc";
     reqMsg["sdp"] = sdpOffer;
     reqMsg["tid"] = rtc::CreateRandomString(7);
     Json::StreamWriterBuilder write_builder;

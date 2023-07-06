@@ -81,6 +81,8 @@ void MicImpl::Start() {
                 break;
             }
 
+            //audio_device ->StartPlayout();
+
             // 8. 启动麦克风采集
             if (audio_device->StartRecording()) {
                 RTC_LOG(LS_WARNING) << "StartRecording failed, mic_id: " << mic_id_;
@@ -129,7 +131,7 @@ void MicImpl::Destroy() {
     KRTCGlobal::Instance()->worker_thread()->PostTask(webrtc::ToQueuedTask([=]() {
         RTC_LOG(LS_INFO) << "MicImpl Destroy PostTask";
         delete this;
-    }));     
+    }));
 }
 
 int32_t MicImpl::RecordedDataIsAvailable(const void* audioSamples,
@@ -137,7 +139,7 @@ int32_t MicImpl::RecordedDataIsAvailable(const void* audioSamples,
     const size_t nBytesPerSample, // 每个样本的字节数，是包括了通道数来计算的
     const size_t nChannels,
     const uint32_t samplesPerSec,
-    const uint32_t totalDelayMS,  // 参考信号和远端回声信号之间的延迟
+    const uint32_t totalDelayMS, 
     const int32_t clockDrift,
     const uint32_t currentMicLevel,
     const bool keyPressed,

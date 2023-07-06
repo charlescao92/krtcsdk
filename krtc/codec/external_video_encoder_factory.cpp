@@ -11,6 +11,7 @@
 
 #include "nv_encoder.h"
 #include "qsv_encoder.h"
+#include "x265_encoder.h"
 
 namespace krtc {
 
@@ -19,8 +20,7 @@ namespace krtc {
 		std::vector<webrtc::SdpVideoFormat> GetSupportedFormats()
 			const override {
 			std::vector<webrtc::SdpVideoFormat> video_formats;
-			for (const webrtc::SdpVideoFormat& h264_format : webrtc::SupportedH264Codecs())
-				video_formats.push_back(h264_format);
+			video_formats.push_back(webrtc::SdpVideoFormat(cricket::kH265CodecName));
 			return video_formats;
 		}
 
@@ -35,21 +35,7 @@ namespace krtc {
 
 		std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(
 			const webrtc::SdpVideoFormat& format) override {
-			if (absl::EqualsIgnoreCase(format.name, cricket::kH264CodecName)) {
-				if (webrtc::H264Encoder::IsSupported()) {
-					if (xop::NvidiaD3D11Encoder::IsSupported()) {
-						return absl::make_unique<krtc::NvEncoder>(cricket::VideoCodec(format));
-					}
-					else if (xop::IntelD3DEncoder::IsSupported()) {
-						return absl::make_unique<krtc::QsvEncoder>(cricket::VideoCodec(format));
-					}
-					else {
-						return webrtc::H264Encoder::Create(cricket::VideoCodec(format));
-					}
-				}
-			}
-
-			return nullptr;
+			return absl::make_unique<krtc::X265Encoder>(cricket::VideoCodec(format));
 		}
 	};
 
