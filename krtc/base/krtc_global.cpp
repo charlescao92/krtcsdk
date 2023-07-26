@@ -9,6 +9,7 @@
 
 #include "krtc/base/krtc_global.h"
 #include "krtc/base/krtc_http.h"
+#include "krtc/device/audio_device_data_observer.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #include "krtc/codec/external_video_encoder_factory.h"
@@ -40,12 +41,15 @@ KRTCGlobal::KRTCGlobal() :
     http_manager_ = new HttpManager();
     http_manager_->Start();
 
-    worker_thread_->PostTask(webrtc::ToQueuedTask([=]() {
+    worker_thread_->Invoke<void>(RTC_FROM_HERE, [=]() {
         audio_device_ = webrtc::AudioDeviceModule::Create(
             webrtc::AudioDeviceModule::kPlatformDefaultAudio,
             task_queue_factory_.get());
+        audio_device_ = webrtc::CreateAudioDeviceWithDataObserver(audio_device_, std::make_unique<ADMDataObserver>());
         audio_device_->Init();
-    }));
+    });
+
+    push_peer_connection_factory();
 
     DesktopCapturer::GetScreenSourceList(screen_source_list_);
 }
@@ -54,6 +58,9 @@ KRTCGlobal::~KRTCGlobal() {}
 
 webrtc::PeerConnectionFactoryInterface* KRTCGlobal::push_peer_connection_factory()
 {
+    if (push_peer_connection_factory_) {
+        return push_peer_connection_factory_.get();
+    }
 #if defined(_WIN32) || defined(_WIN64)
     push_peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
         network_thread_.get(), /* network_thread */

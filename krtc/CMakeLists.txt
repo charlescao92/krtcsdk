@@ -75,7 +75,7 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
 endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
-    add_library(krtc SHARED ${all_src} "codec/common_encoder.h")
+    add_library(krtc SHARED ${all_src} "codec/common_encoder.h" "device/audio_device_data_observer.cpp" "device/audio_device_data_observer.h")
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
     add_library(krtc_static STATIC ${all_src})
     set_target_properties(krtc_static PROPERTIES  OUTPUT_NAME "krtc")
@@ -104,9 +104,11 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 	    dxgi
         ${WEBRTC_LIB_DIR}/webrtc.lib
         ${KRTC_THIRD_PARTY_DIR}/lib/libcurl.lib
+        ${KRTC_THIRD_PARTY_DIR}/lib/libssh2.lib
+        ${KRTC_THIRD_PARTY_DIR}/lib/zlibstatic.lib
         ${KRTC_THIRD_PARTY_DIR}/lib/jsoncpp_static.lib
         ${KRTC_THIRD_PARTY_DIR}/lib/libssl.lib
-	    ${KRTC_THIRD_PARTY_DIR}/lib/libcrypto.lib
+	    ${KRTC_THIRD_PARTY_DIR}/lib/libcrypto.lib 
     )
 elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
     target_link_libraries(krtc

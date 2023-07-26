@@ -3,6 +3,8 @@
 #include <rtc_base/logging.h>
 #include <rtc_base/task_utils/to_queued_task.h>
 #include <api/audio/audio_frame.h>
+#include <modules/audio_device/include/audio_device.h>
+#include <api/peer_connection_interface.h>
 
 #include "krtc/base/krtc_global.h"
 #include "krtc/media/media_frame.h"
@@ -27,16 +29,17 @@ void MicImpl::Start() {
         KRTCError err = KRTCError::kNoErr;
 
         do {
+
             // 1. 如果麦克风已经启动采集，直接停止
             if (has_start_) {
                 RTC_LOG(LS_WARNING) << "mic already start, mic_id: " << mic_id_;
                 break;
             }
 
-            webrtc::AudioDeviceModule* audio_device =
-                KRTCGlobal::Instance()->audio_device();
-            // 2. 设置回调
-            audio_device->RegisterAudioCallback(this);
+            // 2. 直接从webrtc获取adm模块指针
+            rtc::scoped_refptr<webrtc::AudioDeviceModule> audio_device =
+               KRTCGlobal::Instance()->push_peer_connection_factory()->GetAdmPtr();
+
 
             // 3. 检查系统是否存在麦克风设备
             int total = audio_device->RecordingDevices();
@@ -81,6 +84,21 @@ void MicImpl::Start() {
                 break;
             }
 
+            bool ok = false;
+            audio_device->PlayoutIsAvailable(&ok);
+            if (!ok) {
+                RTC_LOG(LS_WARNING) << "PlayoutIsAvailable failed, mic_id: " << mic_id_;
+                err = KRTCError::kAudioInitRecordingErr;
+                break;
+            }
+
+            int32_t ret = audio_device->InitPlayout();
+            if (audio_device->StartPlayout()) {
+                RTC_LOG(LS_WARNING) << "StartPlayout failed!!!";
+                err = KRTCError::kAudioStartRecordingErr;
+                break;
+            }
+
             // 8. 启动麦克风采集
             if (audio_device->StartRecording()) {
                 RTC_LOG(LS_WARNING) << "StartRecording failed, mic_id: " << mic_id_;
@@ -120,6 +138,9 @@ void MicImpl::Stop() {
         if (audio_device->RecordingIsInitialized()) {
             audio_device->StopRecording();
         }
+        if (audio_device->PlayoutIsInitialized()) {
+            audio_device->StopPlayout();
+        }
     }));
 }
 
@@ -132,39 +153,4 @@ void MicImpl::Destroy() {
     }));     
 }
 
-int32_t MicImpl::RecordedDataIsAvailable(const void* audioSamples,
-    const size_t nSamples,  // 每个声道数包含的样本数
-    const size_t nBytesPerSample, // 每个样本的字节数，是包括了通道数来计算的
-    const size_t nChannels,
-    const uint32_t samplesPerSec,
-    const uint32_t totalDelayMS,  // 参考信号和远端回声信号之间的延迟
-    const int32_t clockDrift,
-    const uint32_t currentMicLevel,
-    const bool keyPressed,
-    uint32_t& newMicLevel)
-{
-    int len = static_cast<int>(nSamples * nBytesPerSample);
-    auto frame = std::make_shared<MediaFrame>(webrtc::AudioFrame::kMaxDataSizeBytes);
-    frame->fmt.media_type = MainMediaType::kMainTypeAudio;
-    frame->fmt.sub_fmt.audio_fmt.type = SubMediaType::kSubTypePcm;
-    frame->fmt.sub_fmt.audio_fmt.nbytes_per_sample = nBytesPerSample;
-    frame->fmt.sub_fmt.audio_fmt.samples_per_channel = nSamples;
-    frame->fmt.sub_fmt.audio_fmt.channels = nChannels;
-    frame->fmt.sub_fmt.audio_fmt.samples_per_sec = samplesPerSec;
-    frame->fmt.sub_fmt.audio_fmt.total_delay_ms = totalDelayMS;
-    frame->fmt.sub_fmt.audio_fmt.key_pressed = keyPressed;
-    frame->data_len[0] = len;
-    frame->data[0] = new char[frame->data_len[0]];
-    memcpy(frame->data[0], audioSamples, len);
-
-    // 计算时间戳，根据采样频率进行单调递增
-    timestamp_ += nSamples;
-    frame->ts = timestamp_;
-
-    if (KRTCGlobal::Instance()->engine_observer()) {
-        KRTCGlobal::Instance()->engine_observer()->OnPureAudioFrame(frame);
-    }
-    
-    return 0;
-}
 } // namespace krtc

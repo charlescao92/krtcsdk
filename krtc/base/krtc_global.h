@@ -53,7 +53,9 @@ namespace krtc {
 
 		HttpManager* http_manager() { return http_manager_; }
 	
-		webrtc::AudioDeviceModule* audio_device() { return audio_device_.get(); }
+		webrtc::AudioDeviceModule* audio_device() {
+			return push_peer_connection_factory()->GetAdmPtr().get();
+		}
 
 		webrtc::PeerConnectionFactoryInterface* push_peer_connection_factory();
 
