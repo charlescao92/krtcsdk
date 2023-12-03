@@ -525,9 +525,8 @@ void MainWindow::OnCapturePureVideoFrame(std::shared_ptr<krtc::MediaFrame> frame
 	video_frame->data_len[0] = stridey * src_height;
 	video_frame->data_len[1] = strideu * ((src_height + 1) / 2);
 	video_frame->data_len[2] = stridev * ((src_height + 1) / 2);
-	video_frame->data[0] = new char[video_frame->data_len[0]];
-	video_frame->data[1] = new char[video_frame->data_len[1]];
-	video_frame->data[2] = new char[video_frame->data_len[2]];
+	video_frame->data[1] = video_frame->data[0] + video_frame->data_len[0];
+	video_frame->data[2] = video_frame->data[1] + video_frame->data_len[1];
 	memcpy(video_frame->data[0], frame->data[0], frame->data_len[0]);
 	memcpy(video_frame->data[1], frame->data[1], frame->data_len[1]);
 	memcpy(video_frame->data[2], frame->data[2], frame->data_len[2]);
@@ -554,9 +553,8 @@ void MainWindow::OnPullVideoFrame(std::shared_ptr<krtc::MediaFrame> frame)
 	video_frame->data_len[0] = stridey * src_height;
 	video_frame->data_len[1] = strideu * ((src_height + 1) / 2);
 	video_frame->data_len[2] = stridev * ((src_height + 1) / 2);
-	video_frame->data[0] = new char[video_frame->data_len[0]];
-	video_frame->data[1] = new char[video_frame->data_len[1]];
-	video_frame->data[2] = new char[video_frame->data_len[2]];
+	video_frame->data[1] = video_frame->data[0] + video_frame->data_len[0];
+	video_frame->data[2] = video_frame->data[1] + video_frame->data_len[1];
 	memcpy(video_frame->data[0], frame->data[0], frame->data_len[0]);
 	memcpy(video_frame->data[1], frame->data[1], frame->data_len[1]);
 	memcpy(video_frame->data[2], frame->data[2], frame->data_len[2]);

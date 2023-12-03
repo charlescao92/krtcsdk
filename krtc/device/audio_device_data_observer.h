@@ -1,4 +1,4 @@
-#ifndef KRTCSDK_KRTC_DEVICE_AUDIO_DEVICE_DATA_OBSERVER_H_
+﻿#ifndef KRTCSDK_KRTC_DEVICE_AUDIO_DEVICE_DATA_OBSERVER_H_
 #define KRTCSDK_KRTC_DEVICE_AUDIO_DEVICE_DATA_OBSERVER_H_
 
 #include <modules/audio_device/include/audio_device_data_observer.h>

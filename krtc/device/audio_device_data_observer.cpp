@@ -9,13 +9,13 @@ namespace krtc {
         const size_t bytes_per_sample,
         const size_t num_channels,
         const uint32_t samples_per_sec) {
-      /*  RTC_LOG(LS_INFO) << "音频采集数据，num_samples:" << num_samples
+      /*/  RTC_LOG(LS_INFO) << "闊抽閲囬泦鏁版嵁锛宯um_samples:" << num_samples
             << " bytes_per_sample:" << bytes_per_sample
             << " num_channels:" << num_channels
             << "samples_per_sec:" << samples_per_sec;*/
 
         int len = static_cast<int>(num_samples * bytes_per_sample);
-        auto frame = std::make_shared<MediaFrame>(webrtc::AudioFrame::kMaxDataSizeBytes);
+        auto frame = std::make_shared<MediaFrame>(len); //webrtc::AudioFrame::kMaxDataSizeBytes
         frame->fmt.media_type = MainMediaType::kMainTypeAudio;
         frame->fmt.sub_fmt.audio_fmt.type = SubMediaType::kSubTypePcm;
         frame->fmt.sub_fmt.audio_fmt.nbytes_per_sample = bytes_per_sample;
@@ -23,10 +23,9 @@ namespace krtc {
         frame->fmt.sub_fmt.audio_fmt.channels = num_channels;
         frame->fmt.sub_fmt.audio_fmt.samples_per_sec = samples_per_sec;
         frame->data_len[0] = len;
-        frame->data[0] = new char[frame->data_len[0]];
         memcpy(frame->data[0], audio_samples, len);
 
-        // 计算时间戳，根据采样频率进行单调递增
+        // 璁＄畻鏃堕棿鎴筹紝鏍规嵁閲囨牱棰戠巼杩涜鍗曡皟閫掑
         timestamp_ += num_samples;
         frame->ts = timestamp_;
 
@@ -40,7 +39,7 @@ namespace krtc {
         const size_t bytes_per_sample,
         const size_t num_channels,
         const uint32_t samples_per_sec) {
-       /* RTC_LOG(LS_INFO) << "音频播放数据，num_samples:" << num_samples
+       /* RTC_LOG(LS_INFO) << "闊抽鎾斁鏁版嵁锛宯um_samples:" << num_samples
             << " bytes_per_sample:" << bytes_per_sample
             << " num_channels:" << num_channels
             << "samples_per_sec:" << samples_per_sec;*/

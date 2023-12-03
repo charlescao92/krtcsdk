@@ -1,7 +1,5 @@
-﻿#ifndef KRTCSDK_KRTC_MEDIA_MEDIA_FRAME_H_
-#define KRTCSDK_KRTC_MEDIA_MEDIA_FRAME_H_
-
-#include "krtc/krtc.h"
+#ifndef XRTCSDK_XRTC_MEDIA_BASE_MEDIA_FRAME_H_
+#define XRTCSDK_XRTC_MEDIA_BASE_MEDIA_FRAME_H_
 
 namespace krtc {
 
@@ -9,7 +7,7 @@ enum class MainMediaType {
     kMainTypeCommon,
     kMainTypeAudio,
     kMainTypeVideo,
-    kMainTypeData   // 文本信息，或者媒体信息类型
+    kMainTypeData
 };
 
 enum class SubMediaType {
@@ -22,22 +20,22 @@ enum class SubMediaType {
 
 struct AudioFormat {
     SubMediaType type;
-    size_t nbytes_per_sample;   // 样本字节数，16bit
+    size_t nbytes_per_sample; // 16bit
     size_t samples_per_channel; // 每个声道的采样数
-    size_t channels;            // 通道数
-    uint32_t samples_per_sec;   // 采样率
-    uint32_t total_delay_ms;    // 延迟时间，回声消除会用到
-    bool key_pressed;           // 键盘按键动作，降噪会用到
+    size_t channels;
+    uint32_t samples_per_sec;
+    uint32_t total_delay_ms;
+    bool key_pressed;
 };
 
-struct KRTC_API VideoFormat {
+struct VideoFormat {
     SubMediaType type;
     int width;
     int height;
-    bool idr; // 是否是关键帧
+    bool idr;
 };
 
-class KRTC_API MediaFormat {
+class MediaFormat {
 public:
     MainMediaType media_type;
     union {
@@ -46,6 +44,7 @@ public:
     } sub_fmt;
 };
 
+/*
 class KRTC_API MediaFrame {
 public:
     MediaFrame(int size) : max_size(size) {
@@ -78,7 +77,35 @@ public:
     uint32_t ts = 0;             // 帧的时间戳
     int64_t capture_time_ms = 0; // 采集时间
 };
+*/
 
-} // namespace krtc
+class MediaFrame {
+public:
+    MediaFrame(int size) : max_size(size) {
+        memset(data, 0, sizeof(data));
+        memset(data_len, 0, sizeof(data_len));
+        memset(stride, 0, sizeof(stride));
+        data[0] = new char[size];
+        data_len[0] = size;
+    }
 
-#endif // KRTCSDK_KRTC_MEDIA_MEDIA_FRAME_H_
+    ~MediaFrame() {
+        if (data[0]) {
+            delete[] data[0];
+            data[0] = nullptr;
+        }
+    }
+    
+public:
+    int max_size;
+    MediaFormat fmt;
+    char* data[4];
+    int data_len[4];
+    int stride[4];
+    uint32_t ts = 0;
+    int64_t capture_time_ms = 0;
+};
+
+} // namespace xrtc
+
+#endif // XRTCSDK_XRTC_MEDIA_BASE_MEDIA_FRAME_H_

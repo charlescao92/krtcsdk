@@ -1,4 +1,4 @@
-#include "krtc/device/vcm_capturer.h"
+ï»¿#include "krtc/device/vcm_capturer.h"
 
 #include <stdint.h>
 
@@ -151,10 +151,9 @@ webrtc::VideoFrame VcmFramePreprocessor::Preprocess(const webrtc::VideoFrame& fr
     media_frame->data_len[1] = strideU * ((src_height + 1) / 2);
     media_frame->data_len[2] = strideV * ((src_height + 1) / 2);
 
-    // ÄÃµ½Ã¿¸öÆ½ÃæÊı×éµÄÖ¸Õë£¬È»ºó¿½±´Êı¾İµ½Æ½ÃæÊı×éÀïÃæ
-    media_frame->data[0] = new char[media_frame->data_len[0]];
-    media_frame->data[1] = new char[media_frame->data_len[1]];
-    media_frame->data[2] = new char[media_frame->data_len[2]];
+    // æ‹¿åˆ°æ¯ä¸ªå¹³é¢æ•°ç»„çš„æŒ‡é’ˆï¼Œç„¶åæ‹·è´æ•°æ®åˆ°å¹³é¢æ•°ç»„é‡Œé¢
+    media_frame->data[1] = media_frame->data[0] + media_frame->data_len[0];
+    media_frame->data[2] = media_frame->data[1] + media_frame->data_len[1];
     memcpy(media_frame->data[0], vfb->GetI420()->DataY(), media_frame->data_len[0]);
     memcpy(media_frame->data[1], vfb->GetI420()->DataU(), media_frame->data_len[1]);
     memcpy(media_frame->data[2], vfb->GetI420()->DataV(), media_frame->data_len[2]);
@@ -168,7 +167,7 @@ webrtc::VideoFrame VcmFramePreprocessor::Preprocess(const webrtc::VideoFrame& fr
     memcpy((char*)yuv_buffer->MutableDataV(), preprocessed_frame->data[2], preprocessed_frame->data_len[2]);
 
     webrtc::VideoFrame video_frame(yuv_buffer, 0, 0, webrtc::kVideoRotation_0);
-    video_frame.set_timestamp_us(rtc::TimeMicros()); // ÉèÖÃÎªµ±Ç°Ê±¼ä
+    video_frame.set_timestamp_us(rtc::TimeMicros()); // è®¾ç½®ä¸ºå½“å‰æ—¶é—´
     return video_frame;
 }
 

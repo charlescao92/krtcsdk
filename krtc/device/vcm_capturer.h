@@ -64,7 +64,7 @@ public:
 		 const size_t fps = 30;
 
 		 auto vcm_capture = VcmCapturer::Create(cam_id, width, height, fps);
-		 vcm_capture->SetFramePreprocessor(std::make_unique<VcmFramePreprocessor>());
+		 //vcm_capture->SetFramePreprocessor(std::make_unique<VcmFramePreprocessor>());
 
 		 if (vcm_capture) {
 			 return new rtc::RefCountedObject<VcmCapturerTrackSource>(std::move(vcm_capture));

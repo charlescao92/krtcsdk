@@ -1,4 +1,4 @@
-//H:\webrtc\webrtc-checkout\src\test\win\d3d_renderer.cc
+﻿//H:\webrtc\webrtc-checkout\src\test\win\d3d_renderer.cc
 
 #include "krtc/render/win/d3d_renderer.h"
 

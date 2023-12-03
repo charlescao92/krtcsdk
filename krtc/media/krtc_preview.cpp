@@ -1,4 +1,4 @@
-#include <rtc_base/logging.h>
+﻿#include <rtc_base/logging.h>
 #include <rtc_base/task_utils/to_queued_task.h>
 
 #include "krtc/media/default.h"
@@ -91,6 +91,10 @@ void KRTCPreview::Destroy() {}
 void KRTCPreview::OnFrame(const webrtc::VideoFrame& frame){
     if (KRTCGlobal::Instance()->engine_observer()) {
         rtc::scoped_refptr<webrtc::VideoFrameBuffer> vfb = frame.video_frame_buffer();
+        if (!vfb || !vfb->GetI420()) {
+            return;
+        }
+
         int src_width = frame.width();
         int src_height = frame.height();
 
@@ -112,12 +116,17 @@ void KRTCPreview::OnFrame(const webrtc::VideoFrame& frame){
         media_frame->data_len[2] = strideV * ((src_height + 1) / 2);
 
         // 拿到每个平面数组的指针，然后拷贝数据到平面数组里面
-        media_frame->data[0] = new char[media_frame->data_len[0]];
-        media_frame->data[1] = new char[media_frame->data_len[1]];
-        media_frame->data[2] = new char[media_frame->data_len[2]];
-        memcpy(media_frame->data[0], vfb->GetI420()->DataY(), media_frame->data_len[0]);
-        memcpy(media_frame->data[1], vfb->GetI420()->DataU(), media_frame->data_len[1]);
-        memcpy(media_frame->data[2], vfb->GetI420()->DataV(), media_frame->data_len[2]);
+        media_frame->data[1] = media_frame->data[0] + media_frame->data_len[0];
+        media_frame->data[2] = media_frame->data[1] + media_frame->data_len[1];
+        if (vfb->GetI420()->DataY()) {
+            memcpy(media_frame->data[0], vfb->GetI420()->DataY(), media_frame->data_len[0]);
+        }
+        if (vfb->GetI420()->DataU()) {
+            memcpy(media_frame->data[1], vfb->GetI420()->DataU(), media_frame->data_len[1]);
+        }
+        if (vfb->GetI420()->DataV()) {
+            memcpy(media_frame->data[2], vfb->GetI420()->DataV(), media_frame->data_len[2]);
+        }
 
         KRTCGlobal::Instance()->engine_observer()->OnCapturePureVideoFrame(media_frame);
     }

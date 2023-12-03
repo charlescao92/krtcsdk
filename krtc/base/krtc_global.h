@@ -1,4 +1,4 @@
-#ifndef KRTCSDK_KRTC_BASE_KRTC_GLOBAL_H_
+﻿#ifndef KRTCSDK_KRTC_BASE_KRTC_GLOBAL_H_
 #define KRTCSDK_KRTC_BASE_KRTC_GLOBAL_H_
 
 #include <memory>

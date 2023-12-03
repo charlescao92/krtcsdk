@@ -1,4 +1,4 @@
-#ifndef KRTCSDK_KRTC_MEDIA_KRTC_PREVIEW_H_
+﻿#ifndef KRTCSDK_KRTC_MEDIA_KRTC_PREVIEW_H_
 #define KRTCSDK_KRTC_MEDIA_KRTC_PREVIEW_H_
 
 #include "krtc/krtc.h"

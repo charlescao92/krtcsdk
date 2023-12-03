@@ -1,4 +1,4 @@
-#include <modules/video_capture/video_capture_factory.h>
+﻿#include <modules/video_capture/video_capture_factory.h>
 #include <rtc_base/task_utils/to_queued_task.h>
 #include <media/engine/adm_helpers.h>
 #include <api/create_peerconnection_factory.h>
