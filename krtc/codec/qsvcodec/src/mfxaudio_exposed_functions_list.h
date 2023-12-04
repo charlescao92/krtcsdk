@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 //
-// WARNING:
+// LS_WARNING:
 // this file doesn't contain an include guard by intension.
 // The file may be included into a source file many times.
 // That is why this header doesn't contain any include directive.

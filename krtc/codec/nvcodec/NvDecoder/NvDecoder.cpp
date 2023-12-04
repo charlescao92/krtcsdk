@@ -555,7 +555,7 @@ NvDecoder::~NvDecoder() {
     std::lock_guard<std::mutex> lock(m_mtxVPFrame);
     if (m_vpFrame.size() != m_nFrameAlloc)
     {
-        //LOG(WARNING) << "nFrameAlloc(" << m_nFrameAlloc << ") != m_vpFrame.size()(" << m_vpFrame.size() << ")";
+        //LOG(LS_WARNING) << "nFrameAlloc(" << m_nFrameAlloc << ") != m_vpFrame.size()(" << m_vpFrame.size() << ")";
     }
     for (uint8_t *pFrame : m_vpFrame)
     {

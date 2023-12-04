@@ -1,4 +1,4 @@
-﻿#include "krtc/device/vcm_capturer.h"
+#include "krtc/device/vcm_capturer.h"
 
 #include <stdint.h>
 
@@ -7,7 +7,6 @@
 #include <modules/video_capture/video_capture_factory.h>
 #include <rtc_base/checks.h>
 #include <rtc_base/logging.h>
-#include <rtc_base/task_utils/to_queued_task.h>
 #include <api/video/i420_buffer.h>
 
 #include "krtc/base/krtc_global.h"
@@ -37,7 +36,7 @@ VcmCapturer::VcmCapturer(const std::string& cam_id, size_t width, size_t height,
 void VcmCapturer::Start()
 {
     RTC_LOG(LS_INFO) << "CamImpl Start call";
-    signaling_thread_->PostTask(webrtc::ToQueuedTask([=] {
+    signaling_thread_->PostTask([=] {
         RTC_LOG(LS_INFO) << "CamImpl Start PostTask";
 
         KRTCError err = KRTCError::kNoErr;
@@ -93,7 +92,7 @@ void VcmCapturer::Start()
                 KRTCGlobal::Instance()->engine_observer()->OnVideoSourceSuccess();
             }
         }
-    }));
+    });
 }
 
 void VcmCapturer::Stop() {
@@ -152,6 +151,7 @@ webrtc::VideoFrame VcmFramePreprocessor::Preprocess(const webrtc::VideoFrame& fr
     media_frame->data_len[2] = strideV * ((src_height + 1) / 2);
 
     // 拿到每个平面数组的指针，然后拷贝数据到平面数组里面
+    media_frame->data[0] = new char[size];
     media_frame->data[1] = media_frame->data[0] + media_frame->data_len[0];
     media_frame->data[2] = media_frame->data[1] + media_frame->data_len[1];
     memcpy(media_frame->data[0], vfb->GetI420()->DataY(), media_frame->data_len[0]);

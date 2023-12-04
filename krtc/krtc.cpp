@@ -1,7 +1,6 @@
 #include <map>
 
 #include <rtc_base/logging.h>
-#include <rtc_base/task_utils/to_queued_task.h>
 
 #include "krtc/krtc.h"
 #include "krtc/base/krtc_global.h"
@@ -49,7 +48,7 @@ const char* KRTCEngine::GetErrString(const KRTCError& err) {
 }
 
 uint32_t KRTCEngine::GetCameraCount() {
-    return KRTCGlobal::Instance()->api_thread()->Invoke<uint32_t>(RTC_FROM_HERE, [=]() {
+    return KRTCGlobal::Instance()->api_thread()->BlockingCall([=]() {
         if (!KRTCGlobal::Instance()->video_device_info()) {
             return (uint32_t)0;
         }
@@ -61,7 +60,7 @@ int32_t KRTCEngine::GetCameraInfo(int index, char* device_name, uint32_t device_
     char* device_id, uint32_t device_id_length)
 {
     assert(device_name_length == 128 && device_id_length == 128);
-    return KRTCGlobal::Instance()->api_thread()->Invoke<int32_t>(RTC_FROM_HERE, [&]() {
+    return KRTCGlobal::Instance()->api_thread()->BlockingCall([&]() {
         int32_t ret = -1;
         if (!KRTCGlobal::Instance()->video_device_info()) {
             return ret;
@@ -73,14 +72,14 @@ int32_t KRTCEngine::GetCameraInfo(int index, char* device_name, uint32_t device_
 }
 
 IVideoHandler* KRTCEngine::CreateCameraSource(const char* cam_id) {
-    return KRTCGlobal::Instance()->api_thread()->Invoke<IVideoHandler*>(RTC_FROM_HERE, [=]() {
+    return KRTCGlobal::Instance()->api_thread()->BlockingCall([=]() {
         return new CameraVideoSource(cam_id);
     });
 }
 
 uint32_t KRTCEngine::GetScreenCount()
 {
-    return KRTCGlobal::Instance()->api_thread()->Invoke<int32_t>(RTC_FROM_HERE, [=]() {
+    return KRTCGlobal::Instance()->api_thread()->BlockingCall([=]() {
         int32_t res = KRTCGlobal::Instance()->GetScreenCount();
         return res;
     });
@@ -88,13 +87,13 @@ uint32_t KRTCEngine::GetScreenCount()
 
 IVideoHandler* KRTCEngine::CreateScreenSource(const uint32_t& screen_index)
 {
-    return KRTCGlobal::Instance()->api_thread()->Invoke<IVideoHandler*>(RTC_FROM_HERE, [=]() {
+    return KRTCGlobal::Instance()->api_thread()->BlockingCall([=]() {
         return new DesktopVideoSource(screen_index);
     });
 }
 
 int16_t KRTCEngine::GetMicCount() {
-    return KRTCGlobal::Instance()->api_thread()->Invoke<uint32_t>(RTC_FROM_HERE, [=]() {
+    return KRTCGlobal::Instance()->api_thread()->BlockingCall([=]() {
         if (!KRTCGlobal::Instance()->audio_device()) {
             return (int16_t)0;
         }
@@ -106,7 +105,7 @@ int32_t KRTCEngine::GetMicInfo(int index, char* mic_name, uint32_t mic_name_leng
     char* mic_guid, uint32_t mic_guid_length) 
 {
     assert(mic_name_length == 128 && mic_guid_length == 128);
-    return KRTCGlobal::Instance()->api_thread()->Invoke<int32_t>(RTC_FROM_HERE, [&]() {
+    return KRTCGlobal::Instance()->api_thread()->BlockingCall([=]() {
         int32_t ret = -1;
         if (!KRTCGlobal::Instance()->audio_device()) {
             return ret;
@@ -118,25 +117,25 @@ int32_t KRTCEngine::GetMicInfo(int index, char* mic_name, uint32_t mic_name_leng
 }
 
 IAudioHandler* KRTCEngine::CreateMicSource(const char* mic_id) {
-   return KRTCGlobal::Instance()->api_thread()->Invoke<IAudioHandler*>(RTC_FROM_HERE, [=]() {
+   return KRTCGlobal::Instance()->api_thread()->BlockingCall([=]() {
         return new MicImpl(mic_id);
     });
 }
 
 IMediaHandler* KRTCEngine::CreatePreview(const unsigned int& hwnd) {
-   return KRTCGlobal::Instance()->api_thread()->Invoke<IMediaHandler*>(RTC_FROM_HERE, [=]() {
+   return KRTCGlobal::Instance()->api_thread()->BlockingCall([=]() {
         return new KRTCPreview(hwnd);
    });
 }
 
 IMediaHandler* KRTCEngine::CreatePusher(const char* server_addr, const char* push_channel) {
-   return KRTCGlobal::Instance()->api_thread()->Invoke<IMediaHandler*>(RTC_FROM_HERE, [=]() {
+   return KRTCGlobal::Instance()->api_thread()->BlockingCall([=]() {
         return new KRTCPusher(server_addr, push_channel);
    });
 }
 
 IMediaHandler* KRTCEngine::CreatePuller(const char* server_addr, const char* pull_channel, const unsigned int& hwnd) {
-    return KRTCGlobal::Instance()->api_thread()->Invoke<IMediaHandler*>(RTC_FROM_HERE, [=]() {
+    return KRTCGlobal::Instance()->api_thread()->BlockingCall([=]() {
         return new KRTCPuller(server_addr, pull_channel, hwnd);
     });
 }

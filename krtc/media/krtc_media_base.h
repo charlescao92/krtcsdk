@@ -1,4 +1,4 @@
-﻿#ifndef KRTCSDK_KRTC_MEDIA_KRTC_MEDIA_BASE_H_
+#ifndef KRTCSDK_KRTC_MEDIA_KRTC_MEDIA_BASE_H_
 #define KRTCSDK_KRTC_MEDIA_KRTC_MEDIA_BASE_H_
 
 #include <string>
@@ -16,13 +16,12 @@ public:
 		const std::string& server_addr, 
 		const std::string& channel = "", 
 		const int& hwnd = 0);  // 拉流相关，内部渲染则传入窗口句柄，也可以自己实现获取裸流来渲染显示
-	virtual ~KRTCMediaBase();
+	virtual ~KRTCMediaBase() = default;
 
 	virtual void Start() = 0;
 	virtual void Stop() = 0;
 
 protected:
-	rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory_;
 	rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
 
 	std::string httpRequestUrl_;

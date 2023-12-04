@@ -43,6 +43,7 @@ void YUVOpenGLWidget::updateFrame(MediaFrameSharedPointer frame)
     m_videoFrame->data_len[0] = stridey * src_height;
     m_videoFrame->data_len[1] = strideu * ((src_height + 1) / 2);
     m_videoFrame->data_len[2] = stridev * ((src_height + 1) / 2);
+    m_videoFrame->data[0] = new char[size];
     m_videoFrame->data[1] = m_videoFrame->data[0] + m_videoFrame->data_len[0];
     m_videoFrame->data[2] = m_videoFrame->data[1] + m_videoFrame->data_len[1];
     memcpy(m_videoFrame->data[0], frame->data[0], frame->data_len[0]);

@@ -3,7 +3,6 @@
 #include <rtc_base/logging.h>
 #include <rtc_base/thread.h>
 #include <rtc_base/time_utils.h>
-#include <rtc_base/task_utils/to_queued_task.h>
 
 #include "krtc/base/krtc_global.h"
 
@@ -122,15 +121,15 @@ void HttpManager::Post(HttpRequest request, std::function<void(HttpReply)> resp,
 }
 
 void HttpManager::AddObject(void* obj) {
-	KRTCGlobal::Instance()->worker_thread()->PostTask(webrtc::ToQueuedTask([=]() {
+	KRTCGlobal::Instance()->worker_thread()->PostTask([=]() {
 		async_objs_.insert(obj);
-		}));
+	});
 }
 
 void HttpManager::RemoveObject(void* obj) {
-	KRTCGlobal::Instance()->worker_thread()->PostTask(webrtc::ToQueuedTask([=]() {
+	KRTCGlobal::Instance()->worker_thread()->PostTask([=]() {
 		async_objs_.erase(obj);
-		}));
+		});
 }
 
 void HttpManager::Start() {
@@ -166,13 +165,13 @@ void HttpManager::Start() {
 						std::function<void(HttpReply)> resp_func = req->get_resp_func();
 
 						void* obj = reply.get_obj();
-						KRTCGlobal::Instance()->worker_thread()->PostTask(webrtc::ToQueuedTask([=]() {
+						KRTCGlobal::Instance()->worker_thread()->PostTask([=]() {
 							for (auto alive_obj : async_objs_) {
 								if (obj == alive_obj && resp_func) {
 									resp_func(reply);
 								}
 							}
-							}));
+							});
 					}
 					break;
 				}

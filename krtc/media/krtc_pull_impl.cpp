@@ -45,14 +45,14 @@ void CRtcStatsCollector1::OnStatsDelivered(
         // "type" : "inbound-rtp"
         Json::Value jmessage;
         if (!reader.parse(it->ToJson(), jmessage)) {
-            RTC_LOG(WARNING) << "stats report invalid!!!";
+            RTC_LOG(LS_WARNING) << "stats report invalid!!!";
             return;
         }
 
         std::string type = jmessage["type"].asString();
         if (type == "inbound-rtp") {
 
-            RTC_LOG(INFO) << "Stats report : " << it->ToJson();
+            RTC_LOG(LS_INFO) << "Stats report : " << it->ToJson();
         }
     }
 }
@@ -86,7 +86,10 @@ void KRTCPullImpl::Start() {
 
     webrtc::PeerConnectionInterface::RTCConfiguration config;
     config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
-    config.enable_dtls_srtp = true;
+
+    webrtc::PeerConnectionFactoryInterface::Options options;
+    options.disable_encryption = false;
+    peer_connection_factory_->SetOptions(options);
 
     peer_connection_ = peer_connection_factory_->CreatePeerConnection(
         config, nullptr, nullptr, this);
@@ -110,7 +113,7 @@ void KRTCPullImpl::Stop() {
 void KRTCPullImpl::GetRtcStats() {
     rtc::scoped_refptr<CRtcStatsCollector1> stats(
         new rtc::RefCountedObject<CRtcStatsCollector1>());
-    peer_connection_->GetStats(stats);
+    peer_connection_->GetStats(stats.get());
 }
 
 // PeerConnectionObserver implementation.
@@ -151,11 +154,11 @@ void KRTCPullImpl::OnIceGatheringChange(
 void KRTCPullImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
 
     peer_connection_->SetLocalDescription(
-        DummySetSessionDescriptionObserver::Create(), desc);
+        DummySetSessionDescriptionObserver::Create().get(), desc);
 
     std::string sdpOffer;
     desc->ToString(&sdpOffer);
-    RTC_LOG(INFO) << "sdp Offer:" << sdpOffer;
+    RTC_LOG(LS_INFO) << "sdp Offer:" << sdpOffer;
 
     Json::Value reqMsg;
     reqMsg["api"] = httpRequestUrl_;
@@ -171,9 +174,9 @@ void KRTCPullImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
     HttpRequest request(httpRequestUrl_, json_data);
     KRTCGlobal::Instance()->http_manager()->Post(request, [=](HttpReply reply) {
 
-        KRTCGlobal::Instance()->api_thread()->PostTask(webrtc::ToQueuedTask([=]() {
+        KRTCGlobal::Instance()->api_thread()->PostTask([=]() {
             handleHttpPullResponse(reply);
-        }));
+        });
 
     }, this);
 }
@@ -187,7 +190,7 @@ void KRTCPullImpl::OnFailure(webrtc::RTCError error) {
 void KRTCPullImpl::handleHttpPullResponse(const HttpReply &reply)
 {
     if (reply.get_status_code() != 200 || reply.get_errno() != 0) {
-        RTC_LOG(INFO) << "http post error";
+        RTC_LOG(LS_INFO) << "http post error";
 
         if (KRTCGlobal::Instance()->engine_observer()) {
             KRTCGlobal::Instance()->engine_observer()->OnPullFailed(KRTCError::kSendOfferErr);
@@ -202,7 +205,7 @@ void KRTCPullImpl::handleHttpPullResponse(const HttpReply &reply)
     JSONCPP_STRING err;
     reader->parse(responseBody.data(), responseBody.data() + responseBody.size(), &root, &err);
     if (!err.empty()) {
-        RTC_LOG(WARNING) << "Received unknown message. " << responseBody;
+        RTC_LOG(LS_WARNING) << "Received unknown message. " << responseBody;
 
         if (KRTCGlobal::Instance()->engine_observer()) {
             KRTCGlobal::Instance()->engine_observer()->OnPullFailed(KRTCError::kParseAnswerErr);
@@ -210,11 +213,11 @@ void KRTCPullImpl::handleHttpPullResponse(const HttpReply &reply)
         return;
     }
 
-    RTC_LOG(INFO) << "http pull response : " << responseBody;
+    RTC_LOG(LS_INFO) << "http pull response : " << responseBody;
 
     int code = root["code"].asInt();
     if (code != 0) {
-        RTC_LOG(INFO) << "http pull response error, code: " << code;
+        RTC_LOG(LS_INFO) << "http pull response error, code: " << code;
 
         if (KRTCGlobal::Instance()->engine_observer()) {
             KRTCGlobal::Instance()->engine_observer()->OnPullFailed(KRTCError::kAnswerResponseErr);
@@ -230,7 +233,7 @@ void KRTCPullImpl::handleHttpPullResponse(const HttpReply &reply)
         webrtc::CreateSessionDescription(type, sdpAnswer, &error);
 
     peer_connection_->SetRemoteDescription(
-        DummySetSessionDescriptionObserver::Create(),
+        DummySetSessionDescriptionObserver::Create().get(),
         session_description.release());
 
     if (KRTCGlobal::Instance()->engine_observer()) {

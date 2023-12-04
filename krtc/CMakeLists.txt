@@ -6,6 +6,17 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(CMAKE_CXX_FLAGS "-fno-rtti -g -pipe -W -Wall -fPIC")
 endif()
 
+set(CMAKE_CXX_STANDARD 17)
+
+if(WIN32)
+	add_definitions(-DWIN32_LEAN_AND_MEAN)
+	if(MSVC)
+		add_definitions(-DNOMINMAX)
+		add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+		add_definitions(-D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+	endif()
+endif()
+
 file(GLOB all_src
 	./*.cpp
 	./base/*.cpp
@@ -102,6 +113,7 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 	    d3d11
         dxva2
 	    dxgi
+        Dwmapi
         ${WEBRTC_LIB_DIR}/webrtc.lib
         ${KRTC_THIRD_PARTY_DIR}/lib/libcurl.lib
         ${KRTC_THIRD_PARTY_DIR}/lib/libssh2.lib

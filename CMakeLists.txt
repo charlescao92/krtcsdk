@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.8)
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(CMAKE_C_COMPILER "/usr/bin/clang")
@@ -29,9 +29,9 @@ set(KRTC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(KRTC_THIRD_PARTY_DIR ${KRTC_DIR}/third_party/)
 
-set(WEBRTC_DIR H:/webrtc/webrtc-checkout/webrtc)
+set(WEBRTC_DIR H:/webrtc-m111/webrtc/webrtc-checkout/src)
 set(WEBRTC_INCLUDE_DIR ${WEBRTC_DIR})
-set(WEBRTC_LIB_DIR ${WEBRTC_DIR}/out/x64_debug_m96/obj)
+set(WEBRTC_LIB_DIR ${WEBRTC_DIR}/out/x64_debug_m111/obj)
 
 add_definitions(-DUNICODE -D_UNICODE)
 

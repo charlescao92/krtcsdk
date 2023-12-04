@@ -27,10 +27,10 @@ public:
 	using SourceId = webrtc::DesktopCapturer::SourceId;
 	using FrameCallback = std::function<void(const webrtc::VideoFrame& frame)>;
 
-	static bool GetScreenSourceList(webrtc::DesktopCapturer::SourceList& screen_source_list);
-	static bool GetWindowSourceList(webrtc::DesktopCapturer::SourceList& window_source_list);
+	static bool GetScreenSourceList(webrtc::DesktopCapturer::SourceList* screen_source_list);
+	static bool GetWindowSourceList(webrtc::DesktopCapturer::SourceList* window_source_list);
 
-	static std::unique_ptr<DesktopCapturer> Create(SourceId source_id, size_t out_width = 0, size_t out_height = 0, size_t target_fps = 25);
+	static DesktopCapturer* Create(SourceId source_id, size_t out_width = 0, size_t out_height = 0, size_t target_fps = 25);
 
 	virtual ~DesktopCapturer();
 
@@ -73,11 +73,11 @@ public:
 	static rtc::scoped_refptr<DesktopCapturerTrackSource> Create(const uint32_t& screen_index, size_t target_fps = 30)
 	{
 		webrtc::DesktopCapturer::SourceList source_list;
-		DesktopCapturer::GetScreenSourceList(source_list);
+		DesktopCapturer::GetScreenSourceList(&source_list);
 
-		auto screen_capture = DesktopCapturer::Create(source_list[screen_index].id, target_fps);
+		auto screen_capture = absl::WrapUnique(DesktopCapturer::Create(source_list[screen_index].id, target_fps));
 		if (screen_capture) {
-			return new rtc::RefCountedObject<DesktopCapturerTrackSource>(std::move(screen_capture));
+			return rtc::make_ref_counted<DesktopCapturerTrackSource>(std::move(screen_capture));
 		}
 		return nullptr;
 	}

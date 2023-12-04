@@ -107,7 +107,7 @@ int32_t NvEncoder::InitEncode(const webrtc::VideoCodec* inst,
 		configurations_[i].width = codec_.simulcastStream[idx].width;
 		configurations_[i].height = codec_.simulcastStream[idx].height;
 		configurations_[i].max_frame_rate = static_cast<float>(codec_.maxFramerate);
-		configurations_[i].frame_dropping_on = codec_.H264()->frameDroppingOn;
+		configurations_[i].frame_dropping_on = codec_.GetFrameDropEnabled();
 		configurations_[i].key_frame_interval = codec_.H264()->keyFrameInterval;
 		configurations_[i].num_temporal_layers =
 			std::max(codec_.H264()->numberOfTemporalLayers,
@@ -363,7 +363,6 @@ webrtc::VideoEncoder::EncoderInfo NvEncoder::GetEncoderInfo() const
 	info.implementation_name = "NvEncoder";
 	info.scaling_settings = VideoEncoder::ScalingSettings(kLowH264QpThreshold, kHighH264QpThreshold);
 	info.is_hardware_accelerated = true;
-	info.has_internal_source = false;
 	info.supports_simulcast = true;
 	info.preferred_pixel_formats = { webrtc::VideoFrameBuffer::Type::kI420 };
 	return info;

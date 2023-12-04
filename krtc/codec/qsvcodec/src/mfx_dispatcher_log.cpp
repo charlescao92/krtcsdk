@@ -38,8 +38,8 @@ struct CodeStringTable
     const char *string;
 } LevelStrings []= 
 {
-    {DL_INFO,  "INFO:   "},
-    {DL_WRN,   "WARNING:"},
+    {DL_INFO,  "LS_INFO:   "},
+    {DL_WRN,   "LS_WARNING:"},
     {DL_ERROR, "ERROR:  "}
 };
 

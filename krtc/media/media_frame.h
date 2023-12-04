@@ -85,7 +85,7 @@ public:
         memset(data, 0, sizeof(data));
         memset(data_len, 0, sizeof(data_len));
         memset(stride, 0, sizeof(stride));
-        data[0] = new char[size];
+       // data[0] = new char[size];
         data_len[0] = size;
     }
 

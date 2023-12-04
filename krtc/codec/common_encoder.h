@@ -1,7 +1,10 @@
 #ifndef KRTCSDK_KRTC_CODEC_COMMON_ENCODER_H_
 #define KRTCSDK_KRTC_CODEC_COMMON_ENCODER_H_
 
-#include "third_party/openh264/src/codec/api/svc/codec_app_def.h"
+#include "third_party/openh264/src/codec/api/wels/codec_api.h"
+#include "third_party/openh264/src/codec/api/wels/codec_app_def.h"
+#include "third_party/openh264/src/codec/api/wels/codec_def.h"
+#include "third_party/openh264/src/codec/api/wels/codec_ver.h"
 
 namespace krtc{
 
@@ -29,7 +32,7 @@ static webrtc::VideoFrameType ConvertToVideoFrameType(EVideoFrameType type) {
 		case videoFrameTypeInvalid:
 			break;
 	}
-	RTC_NOTREACHED() << "Unexpected/invalid frame type: " << type;
+	RTC_DCHECK_NOTREACHED() << "Unexpected/invalid frame type: " << type;
 	return webrtc::VideoFrameType::kEmptyFrame;
 }
 

@@ -15,31 +15,21 @@
 
 namespace krtc {
 
-    static webrtc::DesktopCaptureOptions GetCaptureOption()
+    bool DesktopCapturer::GetScreenSourceList(webrtc::DesktopCapturer::SourceList* source_list)
     {
-        auto capture_options = webrtc::DesktopCaptureOptions::CreateDefault();
-#if defined(_WIN32) || defined(_WIN64)
-        capture_options.set_allow_directx_capturer(true);
-        capture_options.set_allow_use_magnification_api(false);
-#elif defined(__APPLE__)
-        capture_options.set_allow_iosurface(true);
-#endif
-        return capture_options;
+        webrtc::DesktopCaptureOptions options = webrtc::DesktopCaptureOptions::CreateDefault();
+        auto desktop_capturer = webrtc::DesktopCapturer::CreateScreenCapturer(options);
+        return desktop_capturer->GetSourceList(source_list);
     }
 
-    bool DesktopCapturer::GetScreenSourceList(webrtc::DesktopCapturer::SourceList& source_list)
+    bool DesktopCapturer::GetWindowSourceList(webrtc::DesktopCapturer::SourceList* source_list)
     {
-        auto desktop_capturer = webrtc::DesktopCapturer::CreateScreenCapturer(GetCaptureOption());
-        return desktop_capturer->GetSourceList(&source_list);
+        webrtc::DesktopCaptureOptions options = webrtc::DesktopCaptureOptions::CreateDefault();
+        auto desktop_capturer = webrtc::DesktopCapturer::CreateWindowCapturer(options);
+        return desktop_capturer->GetSourceList(source_list);
     }
 
-    bool DesktopCapturer::GetWindowSourceList(webrtc::DesktopCapturer::SourceList& source_list)
-    {
-        auto desktop_capturer = webrtc::DesktopCapturer::CreateWindowCapturer(GetCaptureOption());
-        return desktop_capturer->GetSourceList(&source_list);
-    }
-
-    std::unique_ptr<DesktopCapturer> DesktopCapturer::Create(SourceId source_id, size_t out_width, size_t out_height, size_t target_fps)
+    DesktopCapturer* DesktopCapturer::Create(SourceId source_id, size_t out_width, size_t out_height, size_t target_fps)
     {
         std::unique_ptr<DesktopCapturer> screen_capture(new DesktopCapturer());
         if (!screen_capture->Init(source_id, out_width, out_height, target_fps)) {
@@ -48,7 +38,7 @@ namespace krtc {
                 << ")";
             return nullptr;
         }
-        return screen_capture;
+        return screen_capture.release();
     }
 
     DesktopCapturer::DesktopCapturer()
@@ -92,7 +82,7 @@ namespace krtc {
         }
 
         if (is_capture_cursor_) {
-            desktop_capturer_.reset(new webrtc::DesktopAndCursorComposer(std::move(desktop_capturer_), GetCaptureOption()));
+            desktop_capturer_.reset(new webrtc::DesktopAndCursorComposer(std::move(desktop_capturer_), webrtc::DesktopCaptureOptions::CreateDefault()));
         }
 
         if (!desktop_capturer_->SelectSource(source_id_)) {
@@ -146,7 +136,7 @@ namespace krtc {
     {
         bool is_found = false;
         webrtc::DesktopCapturer::SourceList source_list;
-        webrtc::DesktopCaptureOptions options = GetCaptureOption();
+        webrtc::DesktopCaptureOptions options = webrtc::DesktopCaptureOptions::CreateDefault();
 
         source_list.clear();
         desktop_capturer_ = webrtc::DesktopCapturer::CreateScreenCapturer(options);

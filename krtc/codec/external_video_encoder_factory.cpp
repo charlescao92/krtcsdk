@@ -24,14 +24,14 @@ namespace krtc {
 			return video_formats;
 		}
 
-		VideoEncoderFactory::CodecInfo QueryVideoEncoder(
-			const webrtc::SdpVideoFormat& format) const override {
-			// Format must be one of the internal formats.
-			RTC_DCHECK(
-				format.IsCodecInList(GetSupportedFormats()));
-			VideoEncoderFactory::CodecInfo info;
-			return info;
-		}
+		//VideoEncoderFactory::CodecInfo QueryVideoEncoder(
+		//	const webrtc::SdpVideoFormat& format) const override {
+		//	// Format must be one of the internal formats.
+		//	RTC_DCHECK(
+		//		format.IsCodecInList(GetSupportedFormats()));
+		//	VideoEncoderFactory::CodecInfo info;
+		//	return info;
+		//}
 
 		std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(
 			const webrtc::SdpVideoFormat& format) override {

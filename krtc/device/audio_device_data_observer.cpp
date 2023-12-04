@@ -23,6 +23,7 @@ namespace krtc {
         frame->fmt.sub_fmt.audio_fmt.channels = num_channels;
         frame->fmt.sub_fmt.audio_fmt.samples_per_sec = samples_per_sec;
         frame->data_len[0] = len;
+        frame->data[0] = new char[len];
         memcpy(frame->data[0], audio_samples, len);
 
         // 计算时间戳，根据采样频率进行单调递增

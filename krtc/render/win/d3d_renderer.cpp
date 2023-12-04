@@ -5,7 +5,6 @@
 #include <common_video/libyuv/include/webrtc_libyuv.h>
 #include <rtc_base/checks.h>
 #include <rtc_base/logging.h>
-#include <rtc_base/task_utils/to_queued_task.h>
 #include <api/video/video_frame.h>
 
 #include "krtc/base/krtc_global.h"
@@ -292,12 +291,12 @@ void D3dRenderer::DoRender(const webrtc::VideoFrame& frame) {
 
 void D3dRenderer::OnFrame(const webrtc::VideoFrame& frame) {
     // worker_thread执行渲染工作
-    KRTCGlobal::Instance()->worker_thread()->PostTask(webrtc::ToQueuedTask([=] {
+    KRTCGlobal::Instance()->worker_thread()->PostTask([=] {
         if (!TryInit(frame)) {
             return;
         }
         DoRender(frame);
-    }));
+    });
 }
 
 }  // namespace krtc

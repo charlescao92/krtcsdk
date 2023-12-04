@@ -1,4 +1,4 @@
-#include "krtc/media/krtc_push_impl.h"
+﻿#include "krtc/media/krtc_push_impl.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -55,10 +55,14 @@ void KRTCPushImpl::Start() {
 
     webrtc::PeerConnectionInterface::RTCConfiguration config;
     config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
-    config.enable_dtls_srtp = true;
 
     webrtc::PeerConnectionFactoryInterface* peer_connection_factory =
         KRTCGlobal::Instance()->push_peer_connection_factory();
+
+    webrtc::PeerConnectionFactoryInterface::Options options;
+    options.disable_encryption = false;
+    peer_connection_factory->SetOptions(options);
+
     peer_connection_ = peer_connection_factory->CreatePeerConnection(
         config, nullptr, nullptr, this);
 
@@ -69,10 +73,10 @@ void KRTCPushImpl::Start() {
     peer_connection_->AddTransceiver(cricket::MediaType::MEDIA_TYPE_VIDEO,
         rtpTransceiverInit);
 
-    cricket::AudioOptions options;
-    rtc::scoped_refptr<LocalAudioSource> audio_source(LocalAudioSource::Create(&options));
 
-    audio_track_ = peer_connection_factory->CreateAudioTrack(kAudioLabel, audio_source);
+    audio_track_ = peer_connection_factory->CreateAudioTrack(
+        kAudioLabel,
+        peer_connection_factory->CreateAudioSource(cricket::AudioOptions()).get());
     auto add_audio_track_result = peer_connection_->AddTrack(audio_track_, { kStreamId });
     if (!add_audio_track_result.ok()) {
         RTC_LOG(LS_ERROR) << "Failed to add audio track to PeerConnection: "
@@ -114,7 +118,7 @@ void KRTCPushImpl::Stop()
 }
 
 void KRTCPushImpl::GetRtcStats() {
-    KRTCGlobal::Instance()->api_thread()->PostTask(webrtc::ToQueuedTask([=]() {
+    KRTCGlobal::Instance()->api_thread()->PostTask([=]() {
         RTC_LOG(LS_INFO) << "KRTCPushImpl  GetRtcStats";
         if (!stats_) {
             stats_ = new rtc::RefCountedObject<CRtcStatsCollector>(this);
@@ -122,7 +126,7 @@ void KRTCPushImpl::GetRtcStats() {
         if (peer_connection_) {
             peer_connection_->GetStats(stats_.get());
         }
-     }));
+     });
 }
 
 void KRTCPushImpl::SetEnableVideo(bool enable)
@@ -154,11 +158,11 @@ void KRTCPushImpl::OnDataChannel(
 // CreateSessionDescriptionObserver implementation.
 void KRTCPushImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
     peer_connection_->SetLocalDescription(
-        DummySetSessionDescriptionObserver::Create(), desc);
+        DummySetSessionDescriptionObserver::Create().get(), desc);
 
     std::string sdpOffer;
     desc->ToString(&sdpOffer);
-    RTC_LOG(INFO) << "sdp offer:" << sdpOffer;
+    RTC_LOG(LS_INFO) << "sdp offer:" << sdpOffer;
 
     Json::Value reqMsg;
     reqMsg["api"] = httpRequestUrl_;
@@ -179,9 +183,9 @@ void KRTCPushImpl::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
             << ", err_no: " << reply.get_errno()
             << ", err_msg: " << reply.get_err_msg()
             << ", response: " << reply.get_resp();
-        KRTCGlobal::Instance()->api_thread()->PostTask(webrtc::ToQueuedTask([=]() {
+        KRTCGlobal::Instance()->api_thread()->PostTask([=]() {
             handleHttpPushResponse(reply);
-        }));
+        });
 
     }, this);
 
@@ -199,7 +203,7 @@ void KRTCPushImpl::OnStatsInfo(const rtc::scoped_refptr<const webrtc::RTCStatsRe
     for (auto it = report->begin(); it != report->end(); ++it) {
         Json::Value jmessage;
         if (!reader.parse(it->ToJson(), jmessage)) {
-            RTC_LOG(WARNING) << "stats report invalid!!!";
+            RTC_LOG(LS_WARNING) << "stats report invalid!!!";
             return;
         }
 
@@ -219,7 +223,7 @@ void KRTCPushImpl::OnStatsInfo(const rtc::scoped_refptr<const webrtc::RTCStatsRe
 
 void KRTCPushImpl::handleHttpPushResponse(const HttpReply &reply) {
     if (reply.get_status_code() != 200 || reply.get_errno() != 0) {
-        RTC_LOG(INFO) << "http post error";
+        RTC_LOG(LS_INFO) << "http post error";
 
         if (KRTCGlobal::Instance()->engine_observer()) {
             KRTCGlobal::Instance()->engine_observer()->OnPushFailed(KRTCError::kSendOfferErr);
@@ -234,7 +238,7 @@ void KRTCPushImpl::handleHttpPushResponse(const HttpReply &reply) {
     JSONCPP_STRING err;
     reader->parse(responseBody.data(), responseBody.data() + responseBody.size(), &root, &err);
     if (!err.empty()) {
-        RTC_LOG(WARNING) << "Received unknown message. " << responseBody;
+        RTC_LOG(LS_WARNING) << "Received unknown message. " << responseBody;
 
         if (KRTCGlobal::Instance()->engine_observer()) {
             KRTCGlobal::Instance()->engine_observer()->OnPushFailed(KRTCError::kParseAnswerErr);
@@ -242,11 +246,11 @@ void KRTCPushImpl::handleHttpPushResponse(const HttpReply &reply) {
         return;
     }
 
-    RTC_LOG(INFO) << "http push response : " << responseBody;
+    RTC_LOG(LS_INFO) << "http push response : " << responseBody;
 
     int code = root["code"].asInt();
     if (code != 0) {
-        RTC_LOG(INFO) << "http push response error, code: " << code;
+        RTC_LOG(LS_INFO) << "http push response error, code: " << code;
 
         if (KRTCGlobal::Instance()->engine_observer()) {
             KRTCGlobal::Instance()->engine_observer()->OnPushFailed(KRTCError::kAnswerResponseErr);
@@ -262,7 +266,7 @@ void KRTCPushImpl::handleHttpPushResponse(const HttpReply &reply) {
         webrtc::CreateSessionDescription(type, sdpAnswer, &error);
 
     peer_connection_->SetRemoteDescription(
-        DummySetSessionDescriptionObserver::Create(),
+        DummySetSessionDescriptionObserver::Create().get(),
         session_description.release());
 
     if (KRTCGlobal::Instance()->engine_observer()) {

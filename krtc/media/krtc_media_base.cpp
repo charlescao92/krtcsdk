@@ -1,4 +1,4 @@
-﻿#include "krtc/media/krtc_media_base.h"
+#include "krtc/media/krtc_media_base.h"
 
 #include <rtc_base/string_encode.h>
 
@@ -45,7 +45,5 @@ KRTCMediaBase::KRTCMediaBase(const CONTROL_TYPE& type,
 	// webrtc://1.14.148.67/live/livestream
 	webrtcStreamUrl_ = "webrtc://" + server_ip + "/live/" + channel_;
 }
-
-KRTCMediaBase::~KRTCMediaBase() {}
 
 } // namespace krtc

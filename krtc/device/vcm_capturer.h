@@ -67,7 +67,7 @@ public:
 		 //vcm_capture->SetFramePreprocessor(std::make_unique<VcmFramePreprocessor>());
 
 		 if (vcm_capture) {
-			 return new rtc::RefCountedObject<VcmCapturerTrackSource>(std::move(vcm_capture));
+			 return rtc::make_ref_counted<VcmCapturerTrackSource>(std::move(vcm_capture));
 		 }
 		 return nullptr;
 	 }

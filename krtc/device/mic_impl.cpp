@@ -1,7 +1,6 @@
 ﻿#include "krtc/device/mic_impl.h"
 
 #include <rtc_base/logging.h>
-#include <rtc_base/task_utils/to_queued_task.h>
 #include <api/audio/audio_frame.h>
 #include <modules/audio_device/include/audio_device.h>
 #include <api/peer_connection_interface.h>
@@ -22,7 +21,7 @@ MicImpl::~MicImpl() {}
 void MicImpl::Start() {
     RTC_LOG(LS_INFO) << "MicImpl Start call";
 
-    KRTCGlobal::Instance()->worker_thread()->PostTask(webrtc::ToQueuedTask([=]() {
+    KRTCGlobal::Instance()->worker_thread()->PostTask([=]() {
 
         RTC_LOG(LS_INFO) << "MicImpl Start PostTask";
 
@@ -121,12 +120,12 @@ void MicImpl::Start() {
             }
         }
 
-    })); 
+    }); 
 }
 
 void MicImpl::Stop() {
     RTC_LOG(LS_INFO) << "MicImpl Stop call";
-    KRTCGlobal::Instance()->worker_thread()->PostTask(webrtc::ToQueuedTask([=]() {
+    KRTCGlobal::Instance()->worker_thread()->PostTask([=]() {
         RTC_LOG(LS_INFO) << "MicImpl Stop PostTask";
         if (!has_start_) {
             return;
@@ -141,16 +140,16 @@ void MicImpl::Stop() {
         if (audio_device->PlayoutIsInitialized()) {
             audio_device->StopPlayout();
         }
-    }));
+    });
 }
 
 void MicImpl::Destroy() {
     RTC_LOG(LS_INFO) << "MicImpl Destroy call";
 
-    KRTCGlobal::Instance()->worker_thread()->PostTask(webrtc::ToQueuedTask([=]() {
+    KRTCGlobal::Instance()->worker_thread()->PostTask([=]() {
         RTC_LOG(LS_INFO) << "MicImpl Destroy PostTask";
         delete this;
-    }));     
+    });     
 }
 
 } // namespace krtc

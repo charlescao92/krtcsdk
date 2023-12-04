@@ -111,8 +111,8 @@ public:
     }
 #else
     #define DISPATCHER_LOG_VA_ARGS(...) wrt.Write(__VA_ARGS__, NULL)
-    //WARNING: don't use types that occupy more that 4 bytes in memory 
-    //WARNING: don't use %s in format specifier
+    //LS_WARNING: don't use types that occupy more that 4 bytes in memory 
+    //LS_WARNING: don't use %s in format specifier
     #define DISPATCHER_LOG(lvl, opcode, str) \
     {\
         DispatcherLogBracketsHelper wrt(lvl, opcode);\
