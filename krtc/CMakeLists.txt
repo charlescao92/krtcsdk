@@ -12,7 +12,7 @@ if(WIN32)
 	add_definitions(-DWIN32_LEAN_AND_MEAN)
 	if(MSVC)
 		add_definitions(-DNOMINMAX)
-		add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+        add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 		add_definitions(-D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 	endif()
 endif()
@@ -77,6 +77,7 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
         -D_UNICODE
         -DWIN32_LEAN_AND_MEAN
         -DUSE_EXTERNAL_ENCOER
+        -DRTC_ENABLE_WIN_WGC
     )
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
     add_definitions(-DKRTC_API_EXPORT
