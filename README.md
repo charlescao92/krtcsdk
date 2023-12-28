@@ -1,6 +1,7 @@
 # 介绍
-基于native webrtc m96，实现一个sdk接口，支持srs的webrtc推拉流
-
+基于native webrtc m111，实现一个sdk接口，支持srs的webrtc推拉流
+webrtc-m111是vs2019最后支持的webrtc版本，从m112开始只能用vs2022来编译了。。
+ 
 # 功能
 1. 支持webrtc推流`桌面+麦克风`或者`摄像机+麦克风`
 2. 支持webrtc拉流
